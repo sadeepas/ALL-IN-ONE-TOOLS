@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self'; worker-src 'self' blob:;">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nexus Task OS | Modern Task & Project Management Suite</title>
+
+    <script src="security.js"></script>
+
+    <!-- Web Icon / Favicon -->
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/906/906334.png" type="image/png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            accent: '#a855f7',
+                            cyan: '#06b6d4',
+                        },
+                        darkbg: '#070a12',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulseGlow 6s ease-in-out infinite alternate',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%': { opacity: 0.35, transform: 'scale(1)' },
+                            '100%': { opacity: 0.7, transform: 'scale(1.08)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-8px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #070a12;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, .font-heading {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Ambient Glow Background Lights */
+        .ambient-glow-1 {
+            position: fixed; top: -15%; left: 15%; width: 550px; height: 550px;
+            background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%; pointer-events: none; z-index: 0;
+        }
+        .ambient-glow-2 {
+            position: fixed; bottom: -15%; right: 15%; width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(6,182,212,0.16) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%; pointer-events: none; z-index: 0;
+        }
+
+        /* Glassmorphism Panels */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-button {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-button:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.22);
+            transform: translateY(-1px);
+        }
+        .glass-button.active {
+            background: linear-gradient(135deg, rgba(99,102,241,0.85), rgba(168,85,247,0.85));
+            border-color: rgba(255, 255, 255, 0.35);
+            box-shadow: 0 0 16px rgba(99,102,241,0.4);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.4); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.6); }
+
+        /* Task Card Hover */
+        .task-card {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .task-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Mobile Bottom Nav Bar */
+        .mobile-nav-bar {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 16px; display: flex; justify-content: space-around;
+        }
+
+        /* Progress Ring SVG */
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+
+  <!-- XSS Protection: Safe escaping utility -->
+  <script>
+    // Global safe text utility - use this instead of innerHTML for user data
+    window.safeText = function(str) {
+      const d = document.createElement('div');
+      d.textContent = String(str || '');
+      return d.innerHTML;
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+</head>
+<body class="h-screen w-screen flex flex-col relative select-none">
+
+    <!-- Ambient Lighting -->
+    <div class="ambient-glow-1 animate-pulse-slow"></div>
+    <div class="ambient-glow-2 animate-pulse-slow"></div>
+
+    <!-- Top Navigation Header -->
+    <header class="glass-panel mx-4 mt-3 px-6 py-3 rounded-2xl flex items-center justify-between z-20 relative border-b border-white/10 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <i class="fa-solid fa-list-check text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold font-heading tracking-wide flex items-center gap-2">
+                    Nexus <span class="bg-indigo-500/20 text-indigo-300 text-xs px-2 py-0.5 rounded-full border border-indigo-500/30">TASK OS</span>
+                </h1>
+                <p class="text-xs text-slate-400 hidden sm:block">Intelligent Task & Project Operations Workspace</p>
+            </div>
+        </div>
+
+        <!-- Right Header Actions -->
+        <div class="flex items-center gap-2 sm:gap-3">
+            <!-- View Switcher -->
+            <div class="flex bg-slate-900/60 p-1 rounded-xl border border-slate-800">
+                <button id="view-kanban-btn" onclick="setViewMode('kanban')" class="px-3 py-1 rounded-lg text-xs font-semibold text-indigo-300 bg-indigo-500/20 border border-indigo-500/30 flex items-center gap-1.5">
+                    <i class="fa-solid fa-table-columns"></i> <span class="hidden sm:inline">Kanban</span>
+                </button>
+                <button id="view-list-btn" onclick="setViewMode('list')" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1.5">
+                    <i class="fa-solid fa-list-ul"></i> <span class="hidden sm:inline">List</span>
+                </button>
+            </div>
+
+            <!-- Create Task Button -->
+            <button onclick="openCreateModal()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 transition-all px-4 py-1.5 rounded-xl text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-500/25 flex items-center gap-2 text-white">
+                <i class="fa-solid fa-plus"></i> <span>New Task</span>
+            </button>
+
+            <!-- Export / Backup Dropdown -->
+            <div class="relative group">
+                <button class="glass-button p-2 px-3 rounded-xl text-xs flex items-center gap-1.5 text-slate-300">
+                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+                <div class="absolute right-0 top-full mt-2 w-48 glass-panel rounded-xl p-2 hidden group-hover:block border border-slate-700 shadow-2xl z-50">
+                    <button onclick="exportJSON()" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-indigo-500/20 text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-file-export text-indigo-400"></i> Backup JSON Data
+                    </button>
+                    <button onclick="exportCSV()" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-indigo-500/20 text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-file-csv text-emerald-400"></i> Export CSV Spreadsheet
+                    </button>
+                    <label class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-indigo-500/20 text-slate-200 flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-file-import text-amber-400"></i> Restore JSON Backup
+                        <input type="file" id="restore-input" accept=".json" class="hidden" onchange="restoreJSON(this)">
+                    </label>
+                    <div class="my-1 border-t border-slate-700/60"></div>
+                    <button onclick="clearCompletedTasks()" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-rose-500/20 text-rose-300 flex items-center gap-2">
+                        <i class="fa-solid fa-trash-can"></i> Clear Completed
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Workspace -->
+    <main class="flex-1 flex flex-col lg:flex-row gap-4 p-4 overflow-hidden z-10 relative">
+        
+        <!-- Left Sidebar: Analytics & Focus Suite -->
+        <aside class="glass-panel w-full lg:w-80 rounded-2xl flex flex-col overflow-hidden border border-white/10 shrink-0">
+            
+            <div class="p-4 border-b border-white/10">
+                <h2 class="text-sm font-semibold font-heading flex items-center gap-2 text-slate-200">
+                    <i class="fa-solid fa-chart-pie text-indigo-400"></i> Task Analytics
+                </h2>
+            </div>
+
+            <div class="p-4 space-y-4 flex-1 overflow-y-auto">
+
+                <!-- Live Metrics Grid -->
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+                        <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Total Protocols</span>
+                        <p id="metric-total" class="text-xl font-bold font-heading text-white mt-0.5">0</p>
+                    </div>
+                    <div class="p-3 bg-indigo-950/30 rounded-xl border border-indigo-500/20">
+                        <span class="text-[10px] text-indigo-300 font-medium uppercase tracking-wider">Active In Progress</span>
+                        <p id="metric-active" class="text-xl font-bold font-heading text-indigo-400 mt-0.5">0</p>
+                    </div>
+                    <div class="p-3 bg-emerald-950/30 rounded-xl border border-emerald-500/20">
+                        <span class="text-[10px] text-emerald-300 font-medium uppercase tracking-wider">Completed</span>
+                        <p id="metric-completed" class="text-xl font-bold font-heading text-emerald-400 mt-0.5">0</p>
+                    </div>
+                    <div class="p-3 bg-rose-950/30 rounded-xl border border-rose-500/20">
+                        <span class="text-[10px] text-rose-300 font-medium uppercase tracking-wider">Critical Priority</span>
+                        <p id="metric-critical" class="text-xl font-bold font-heading text-rose-400 mt-0.5">0</p>
+                    </div>
+                </div>
+
+                <!-- Completion Progress Bar -->
+                <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 space-y-2">
+                    <div class="flex justify-between text-xs text-slate-300">
+                        <span>Overall Completion</span>
+                        <span id="metric-rate" class="font-mono text-indigo-300 font-bold">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div id="metric-progress-bar" class="h-full bg-gradient-to-r from-indigo-500 to-cyan-400 w-0 transition-all duration-500"></div>
+                    </div>
+                </div>
+
+                <!-- Pomodoro Focus Suite Widget -->
+                <div class="p-4 bg-slate-950/60 rounded-xl border border-indigo-500/20 flex flex-col items-center relative overflow-hidden">
+                    <div class="flex items-center justify-between w-full mb-3">
+                        <span class="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                            <i class="fa-solid fa-stopwatch text-purple-400"></i> Focus Timer
+                        </span>
+                        <span id="pomo-status-tag" class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-mono">25m Focus</span>
+                    </div>
+
+                    <!-- Circular Progress Timer -->
+                    <div class="relative w-36 h-36 flex items-center justify-center my-2">
+                        <svg class="w-full h-full" viewBox="0 0 100 100">
+                            <circle class="text-slate-800" stroke-width="6" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50"/>
+                            <circle id="pomo-ring" class="text-indigo-500 progress-ring-circle" stroke-width="6" stroke-linecap="round" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50" stroke-dasharray="263.89" stroke-dashoffset="0"/>
+                        </svg>
+                        <div class="absolute text-center">
+                            <span id="pomo-display" class="text-2xl font-bold font-mono text-white tracking-tight">25:00</span>
+                            <span class="block text-[9px] text-slate-400 uppercase mt-0.5">Deep Work Session</span>
+                        </div>
+                    </div>
+
+                    <!-- Timer Controls -->
+                    <div class="flex items-center gap-2 mt-2 w-full">
+                        <button onclick="togglePomodoro()" id="pomo-start-btn" class="flex-1 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow transition-all">
+                            <i class="fa-solid fa-play mr-1"></i> Start
+                        </button>
+                        <button onclick="resetPomodoro()" class="py-1.5 px-3 rounded-lg glass-button text-slate-300 hover:text-white text-xs">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ambient Audio Simulator -->
+                <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 space-y-2">
+                    <span class="text-xs font-semibold text-slate-300 block flex items-center gap-1.5">
+                        <i class="fa-solid fa-headphones text-cyan-400"></i> Ambient Sound
+                    </span>
+                    <select id="ambient-select" onchange="toggleAmbientSound(this.value)" class="w-full bg-slate-800 text-slate-200 text-xs rounded-lg p-2 border border-slate-700">
+                        <option value="off">Off (Silent Focus)</option>
+                        <option value="rain">Soft Rain Simulation</option>
+                        <option value="white">White Noise Flow</option>
+                        <option value="cafe">Cozy Cafe Ambience</option>
+                    </select>
+                </div>
+
+            </div>
+        </aside>
+
+        <!-- Right Main Viewport: Kanban or List View -->
+        <section class="glass-panel flex-1 rounded-2xl flex flex-col overflow-hidden border border-white/10 relative">
+            
+            <!-- Filters & Search Toolbar -->
+            <div class="p-3 border-b border-white/10 flex flex-wrap gap-3 items-center justify-between bg-slate-950/40">
+                
+                <!-- Search Input -->
+                <div class="relative flex-1 min-w-[200px]">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="search-input" oninput="renderTasks()" placeholder="Search tasks, tags, or notes..." class="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <!-- Filter Controls -->
+                <div class="flex items-center gap-2 flex-wrap">
+                    <!-- Status Filter -->
+                    <select id="filter-status" onchange="renderTasks()" class="bg-slate-900 text-slate-300 text-xs rounded-xl px-3 py-1.5 border border-slate-700">
+                        <option value="all">All Statuses</option>
+                        <option value="Planning">Planning</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Waiting">Waiting</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+
+                    <!-- Category Filter -->
+                    <select id="filter-category" onchange="renderTasks()" class="bg-slate-900 text-slate-300 text-xs rounded-xl px-3 py-1.5 border border-slate-700">
+                        <option value="all">All Categories</option>
+                        <option value="Work">Work</option>
+                        <option value="Study">Study</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Health">Health</option>
+                        <option value="Finance">Finance</option>
+                    </select>
+
+                    <!-- Priority Filter -->
+                    <select id="filter-priority" onchange="renderTasks()" class="bg-slate-900 text-slate-300 text-xs rounded-xl px-3 py-1.5 border border-slate-700">
+                        <option value="all">All Priorities</option>
+                        <option value="Critical">Critical Only</option>
+                        <option value="Normal">Normal Priority</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Kanban Column Board View Container -->
+            <div id="kanban-view" class="flex-1 p-4 overflow-x-auto">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 h-full min-w-[800px] md:min-w-0">
+                    
+                    <!-- Column 1: Planning -->
+                    <div class="flex flex-col bg-slate-950/40 rounded-xl p-3 border border-slate-800/80">
+                        <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
+                            <span class="text-xs font-bold font-heading text-slate-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle text-[8px] text-amber-400"></i> Planning
+                            </span>
+                            <span id="count-planning" class="bg-slate-800 text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-mono">0</span>
+                        </div>
+                        <div id="col-planning" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
+                    </div>
+
+                    <!-- Column 2: In Progress -->
+                    <div class="flex flex-col bg-slate-950/40 rounded-xl p-3 border border-slate-800/80">
+                        <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
+                            <span class="text-xs font-bold font-heading text-indigo-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle text-[8px] text-indigo-400"></i> In Progress
+                            </span>
+                            <span id="count-progress" class="bg-indigo-950/50 text-indigo-300 text-[10px] px-2 py-0.5 rounded-full font-mono">0</span>
+                        </div>
+                        <div id="col-progress" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
+                    </div>
+
+                    <!-- Column 3: Waiting -->
+                    <div class="flex flex-col bg-slate-950/40 rounded-xl p-3 border border-slate-800/80">
+                        <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
+                            <span class="text-xs font-bold font-heading text-purple-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle text-[8px] text-purple-400"></i> Waiting
+                            </span>
+                            <span id="count-waiting" class="bg-purple-950/50 text-purple-300 text-[10px] px-2 py-0.5 rounded-full font-mono">0</span>
+                        </div>
+                        <div id="col-waiting" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
+                    </div>
+
+                    <!-- Column 4: Completed -->
+                    <div class="flex flex-col bg-slate-950/40 rounded-xl p-3 border border-slate-800/80">
+                        <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
+                            <span class="text-xs font-bold font-heading text-emerald-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle text-[8px] text-emerald-400"></i> Completed
+                            </span>
+                            <span id="count-completed" class="bg-emerald-950/50 text-emerald-300 text-[10px] px-2 py-0.5 rounded-full font-mono">0</span>
+                        </div>
+                        <div id="col-completed" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- List View Container (Hidden by default) -->
+            <div id="list-view" class="flex-1 p-4 overflow-y-auto hidden">
+                <div id="list-container" class="space-y-2.5 max-w-4xl mx-auto"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Create / Edit Task Modal -->
+    <div id="task-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
+        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 border border-indigo-500/30 shadow-2xl relative">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-700 pb-3">
+                <h3 id="modal-title" class="text-lg font-bold font-heading text-white flex items-center gap-2">
+                    <i class="fa-solid fa-plus text-indigo-400"></i> Create New Protocol
+                </h3>
+                <button onclick="closeCreateModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="task-form" onsubmit="saveTask(event)" class="space-y-3">
+                <input type="hidden" id="task-id">
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Task Title / Objective *</label>
+                    <input type="text" id="task-title" required placeholder="e.g. Design homepage hero section" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Category</label>
+                        <select id="task-category" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+                            <option value="Work">Work</option>
+                            <option value="Study">Study</option>
+                            <option value="Personal">Personal</option>
+                            <option value="Health">Health</option>
+                            <option value="Finance">Finance</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Priority</label>
+                        <select id="task-priority" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+                            <option value="Normal">Normal</option>
+                            <option value="Critical">Critical Priority</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Status Column</label>
+                        <select id="task-status" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+                            <option value="Planning">Planning</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Waiting">Waiting</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Due Deadline</label>
+                        <input type="date" id="task-date" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Tags (Comma separated)</label>
+                    <input type="text" id="task-tags" placeholder="e.g. design, urgent, v2" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Strategic Notes / Instructions</label>
+                    <textarea id="task-notes" rows="2" placeholder="Task details, requirements, links..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500"></textarea>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeCreateModal()" class="glass-button px-4 py-2 rounded-xl text-xs text-slate-300">Cancel</button>
+                    <button type="submit" class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold px-5 py-2 rounded-xl text-xs shadow-lg shadow-indigo-500/25">Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="mobile-nav-bar lg:hidden">
+        <button onclick="setViewMode('kanban')" class="flex flex-col items-center text-indigo-400">
+            <i class="fa-solid fa-table-columns text-base"></i>
+            <span class="text-[10px] font-medium mt-0.5">Kanban</span>
+        </button>
+        <button onclick="setViewMode('list')" class="flex flex-col items-center text-slate-400">
+            <i class="fa-solid fa-list-ul text-base"></i>
+            <span class="text-[10px] font-medium mt-0.5">List</span>
+        </button>
+        <button onclick="openCreateModal()" class="w-10 h-10 -mt-4 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+            <i class="fa-solid fa-plus text-base"></i>
+        </button>
+        <button onclick="togglePomodoro()" class="flex flex-col items-center text-slate-400">
+            <i class="fa-solid fa-stopwatch text-base"></i>
+            <span class="text-[10px] font-medium mt-0.5">Focus</span>
+        </button>
+    </nav>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- State Management ---
+        const TASK_LIMITS = Object.freeze({ title: 200, notes: 2_000, tags: 20, tag: 50, subtasks: 50 });
+        const TASK_STATUSES = new Set(['Planning', 'In Progress', 'Waiting', 'Completed']);
+        const TASK_PRIORITIES = new Set(['Low', 'Normal', 'High', 'Critical']);
+
+        function makeTaskId() {
+            return `task-${crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`}`;
+        }
+
+        function cleanTaskText(value, maxLength) {
+            return String(value ?? '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, maxLength);
+        }
+
+        function normalizeTask(raw) {
+            if (!raw || typeof raw !== 'object') return null;
+            const id = /^[A-Za-z0-9_-]{1,100}$/.test(String(raw.id || '')) ? String(raw.id) : makeTaskId();
+            const tags = Array.isArray(raw.tags) ? raw.tags.slice(0, TASK_LIMITS.tags).map(tag => cleanTaskText(tag, TASK_LIMITS.tag)).filter(Boolean) : [];
+            const subtasks = Array.isArray(raw.subtasks) ? raw.subtasks.slice(0, TASK_LIMITS.subtasks).map(item => ({
+                text: cleanTaskText(item && item.text, TASK_LIMITS.title), done: Boolean(item && item.done)
+            })).filter(item => item.text) : [];
+            return {
+                id,
+                title: cleanTaskText(raw.title, TASK_LIMITS.title) || 'Untitled task',
+                category: cleanTaskText(raw.category, 80) || 'General',
+                priority: TASK_PRIORITIES.has(raw.priority) ? raw.priority : 'Normal',
+                status: TASK_STATUSES.has(raw.status) ? raw.status : 'Planning',
+                date: /^\d{4}-\d{2}-\d{2}$/.test(String(raw.date || '')) ? String(raw.date) : '',
+                tags,
+                notes: cleanTaskText(raw.notes, TASK_LIMITS.notes),
+                subtasks
+            };
+        }
+
+        function loadTasksSafely() {
+            try {
+                const parsed = JSON.parse(localStorage.getItem('nexus_tasks_v3') || '[]');
+                return Array.isArray(parsed) ? parsed.slice(0, 500).map(normalizeTask).filter(Boolean) : [];
+            } catch {
+                return [];
+            }
+        }
+
+        let tasks = loadTasksSafely();
+        let currentView = 'kanban'; // 'kanban' or 'list'
+
+        // Pomodoro State
+        let pomoTime = 25 * 60;
+        let pomoMax = 25 * 60;
+        let pomoInterval = null;
+        let isPomoRunning = false;
+
+        // --- Window Onload ---
+        window.onload = () => {
+            if (tasks.length === 0) loadInitialSampleTasks();
+            renderTasks();
+        };
+
+        // --- Initial Sample Tasks ---
+        function loadInitialSampleTasks() {
+            tasks = [
+                {
+                    id: 'task-1',
+                    title: 'Design Nexus Task OS Interface',
+                    category: 'Work',
+                    priority: 'Critical',
+                    status: 'In Progress',
+                    date: new Date().toISOString().split('T')[0],
+                    tags: ['design', 'ui', 'urgent'],
+                    notes: 'Create cyber glassmorphism layout with Pomodoro timer.',
+                    subtasks: [
+                        { text: 'Structure Kanban board columns', done: true },
+                        { text: 'Integrate SVG Pomodoro timer', done: true },
+                        { text: 'Add CSV & JSON export', done: false }
+                    ]
+                },
+                {
+                    id: 'task-2',
+                    title: 'Review Weekly Financial Budget',
+                    category: 'Finance',
+                    priority: 'Normal',
+                    status: 'Planning',
+                    date: new Date().toISOString().split('T')[0],
+                    tags: ['finance', 'budget'],
+                    notes: 'Check monthly subscription expenses.',
+                    subtasks: []
+                }
+            ];
+            saveStorage();
+        }
+
+        function saveStorage() {
+            localStorage.setItem('nexus_tasks_v3', JSON.stringify(tasks));
+        }
+
+        // --- Render Main View ---
+        function renderTasks() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('filter-status').value;
+            const catFilter = document.getElementById('filter-category').value;
+            const prioFilter = document.getElementById('filter-priority').value;
+
+            // Filter tasks
+            const filtered = tasks.filter(t => {
+                const matchSearch = t.title.toLowerCase().includes(search) || 
+                                    t.notes.toLowerCase().includes(search) || 
+                                    t.tags.some(tag => tag.toLowerCase().includes(search));
+                const matchStatus = statusFilter === 'all' || t.status === statusFilter;
+                const matchCat = catFilter === 'all' || t.category === catFilter;
+                const matchPrio = prioFilter === 'all' || t.priority === prioFilter;
+                return matchSearch && matchStatus && matchCat && matchPrio;
+            });
+
+            // Update Metrics
+            updateMetrics();
+
+            if (currentView === 'kanban') {
+                renderKanbanView(filtered);
+            } else {
+                renderListView(filtered);
+            }
+        }
+
+        // --- Render Kanban Board ---
+        function renderKanbanView(taskList) {
+            const cols = {
+                'Planning': document.getElementById('col-planning'),
+                'In Progress': document.getElementById('col-progress'),
+                'Waiting': document.getElementById('col-waiting'),
+                'Completed': document.getElementById('col-completed')
+            };
+
+            const counts = { 'Planning': 0, 'In Progress': 0, 'Waiting': 0, 'Completed': 0 };
+
+            // Clear columns
+            Object.values(cols).forEach(c => c.innerHTML = '');
+
+            taskList.forEach(task => {
+                if (cols[task.status]) {
+                    counts[task.status]++;
+                    cols[task.status].appendChild(createTaskCard(task));
+                }
+            });
+
+            // Update column badges
+            document.getElementById('count-planning').innerText = counts['Planning'];
+            document.getElementById('count-progress').innerText = counts['In Progress'];
+            document.getElementById('count-waiting').innerText = counts['Waiting'];
+            document.getElementById('count-completed').innerText = counts['Completed'];
+        }
+
+        // --- Render List View ---
+        function renderListView(taskList) {
+            const container = document.getElementById('list-container');
+            container.innerHTML = '';
+
+            if (taskList.length === 0) {
+                container.innerHTML = `<p class="text-center text-slate-500 text-xs py-8">No matching tasks found.</p>`;
+                return;
+            }
+
+            taskList.forEach(task => {
+                const card = document.createElement('div');
+                card.className = 'glass-panel p-3 rounded-xl flex items-center justify-between gap-3 border border-slate-800 hover:border-indigo-500/40 transition-all';
+                card.innerHTML = `
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <input type="checkbox" ${task.status === 'Completed' ? 'checked' : ''} data-action="toggle" class="w-4 h-4 accent-indigo-500 rounded cursor-pointer">
+                        <div class="overflow-hidden">
+                            <p class="text-xs font-semibold text-slate-200 ${task.status === 'Completed' ? 'line-through text-slate-500' : ''}">${safeText(task.title)}</p>
+                            <div class="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                                <span class="text-indigo-300 font-medium">${safeText(task.category)}</span>
+                                <span>•</span>
+                                <span>${safeText(task.date || 'No Date')}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] px-2 py-0.5 rounded-full ${task.priority === 'Critical' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-slate-800 text-slate-400'}">${safeText(task.priority)}</span>
+                        <button data-action="edit" class="text-slate-400 hover:text-indigo-300 p-1 text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button data-action="delete" class="text-slate-400 hover:text-rose-400 p-1 text-xs"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                `;
+                card.querySelector('[data-action="toggle"]').addEventListener('change', () => toggleComplete(task.id));
+                card.querySelector('[data-action="edit"]').addEventListener('click', () => editTask(task.id));
+                card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteTask(task.id));
+                container.appendChild(card);
+            });
+        }
+
+        // --- Create Task Card Component ---
+        function createTaskCard(task) {
+            const card = document.createElement('div');
+            card.className = 'task-card glass-panel p-3.5 rounded-xl border border-slate-800/80 bg-slate-900/60 space-y-2.5 relative group';
+
+            const subCount = task.subtasks ? task.subtasks.length : 0;
+            const subDone = task.subtasks ? task.subtasks.filter(s => s.done).length : 0;
+            const subPercent = subCount > 0 ? Math.round((subDone / subCount) * 100) : 0;
+
+            const isCritical = task.priority === 'Critical';
+
+            card.innerHTML = `
+                <div class="flex items-start justify-between gap-2">
+                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                        isCritical ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/20'
+                    }">${safeText(task.category)}</span>
+
+                    <!-- Status Selector Dropdown -->
+                    <select data-action="status" class="bg-slate-950 text-slate-300 text-[10px] rounded-lg px-1.5 py-0.5 border border-slate-700 cursor-pointer">
+                        <option value="Planning" ${task.status === 'Planning' ? 'selected' : ''}>Planning</option>
+                        <option value="In Progress" ${task.status === 'In Progress' ? 'selected' : ''}>Progress</option>
+                        <option value="Waiting" ${task.status === 'Waiting' ? 'selected' : ''}>Waiting</option>
+                        <option value="Completed" ${task.status === 'Completed' ? 'selected' : ''}>Done</option>
+                    </select>
+                </div>
+
+                <h4 class="text-xs font-semibold text-slate-100 leading-snug ${task.status === 'Completed' ? 'line-through text-slate-400' : ''}">${safeText(task.title)}</h4>
+
+                ${task.notes ? `<p class="text-[11px] text-slate-400 line-clamp-2">${safeText(task.notes)}</p>` : ''}
+
+                <!-- Subtask Progress Bar -->
+                ${subCount > 0 ? `
+                    <div class="space-y-1 pt-1">
+                        <div class="flex justify-between text-[10px] text-slate-400">
+                            <span>Subtasks (${subDone}/${subCount})</span>
+                            <span class="font-mono text-indigo-300">${subPercent}%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-indigo-500 to-cyan-400" style="width: ${subPercent}%"></div>
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- Card Footer Info -->
+                <div class="flex items-center justify-between pt-2 border-t border-slate-800/60 text-[10px] text-slate-400">
+                    <span class="flex items-center gap-1"><i class="fa-regular fa-calendar text-slate-500"></i> ${safeText(task.date || 'No Date')}</span>
+                    <div class="flex items-center gap-2">
+                        <button data-action="edit" class="hover:text-indigo-300 text-slate-400" title="Edit Task"><i class="fa-solid fa-pen"></i></button>
+                        <button data-action="delete" class="hover:text-rose-400 text-slate-400" title="Delete Task"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+            `;
+            card.querySelector('[data-action="status"]').addEventListener('change', (event) => moveTaskStatus(task.id, event.target.value));
+            card.querySelector('[data-action="edit"]').addEventListener('click', () => editTask(task.id));
+            card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteTask(task.id));
+            return card;
+        }
+
+        // --- Metrics Computation ---
+        function updateMetrics() {
+            const total = tasks.length;
+            const active = tasks.filter(t => t.status === 'In Progress').length;
+            const completed = tasks.filter(t => t.status === 'Completed').length;
+            const critical = tasks.filter(t => t.priority === 'Critical').length;
+            const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            document.getElementById('metric-total').innerText = total;
+            document.getElementById('metric-active').innerText = active;
+            document.getElementById('metric-completed').innerText = completed;
+            document.getElementById('metric-critical').innerText = critical;
+            document.getElementById('metric-rate').innerText = rate + '%';
+            document.getElementById('metric-progress-bar').style.width = rate + '%';
+        }
+
+        // --- View Mode Switcher ---
+        function setViewMode(mode) {
+            currentView = mode;
+            const kbBtn = document.getElementById('view-kanban-btn');
+            const listBtn = document.getElementById('view-list-btn');
+
+            if (mode === 'kanban') {
+                document.getElementById('kanban-view').classList.remove('hidden');
+                document.getElementById('list-view').classList.add('hidden');
+                kbBtn.className = "px-3 py-1 rounded-lg text-xs font-semibold text-indigo-300 bg-indigo-500/20 border border-indigo-500/30 flex items-center gap-1.5";
+                listBtn.className = "px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1.5";
+            } else {
+                document.getElementById('kanban-view').classList.add('hidden');
+                document.getElementById('list-view').classList.remove('hidden');
+                listBtn.className = "px-3 py-1 rounded-lg text-xs font-semibold text-indigo-300 bg-indigo-500/20 border border-indigo-500/30 flex items-center gap-1.5";
+                kbBtn.className = "px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1.5";
+            }
+            renderTasks();
+        }
+
+        // --- Task CRUD Operations ---
+        function openCreateModal() {
+            document.getElementById('task-id').value = '';
+            document.getElementById('task-form').reset();
+            document.getElementById('modal-title').innerHTML = `<i class="fa-solid fa-plus text-indigo-400"></i> Create New Protocol`;
+            document.getElementById('task-modal').classList.remove('hidden');
+        }
+
+        function closeCreateModal() {
+            document.getElementById('task-modal').classList.add('hidden');
+        }
+
+        function saveTask(e) {
+            e.preventDefault();
+            const id = document.getElementById('task-id').value;
+            const title = document.getElementById('task-title').value.trim();
+            const category = document.getElementById('task-category').value;
+            const priority = document.getElementById('task-priority').value;
+            const status = document.getElementById('task-status').value;
+            const date = document.getElementById('task-date').value;
+            const tagsStr = document.getElementById('task-tags').value;
+            const notes = document.getElementById('task-notes').value.trim();
+
+            const tags = tagsStr ? tagsStr.split(',').map(t => cleanTaskText(t, TASK_LIMITS.tag)).filter(Boolean).slice(0, TASK_LIMITS.tags) : [];
+            const taskData = normalizeTask({ id: id || makeTaskId(), title, category, priority, status, date, tags, notes, subtasks: id ? tasks.find(t => t.id === id)?.subtasks : [] });
+            if (!taskData) return;
+
+            if (id) {
+                // Edit existing
+                const index = tasks.findIndex(t => t.id === id);
+                if (index > -1) {
+                    tasks[index] = taskData;
+                }
+            } else {
+                // Create new
+                const newTask = {
+                    ...taskData
+                };
+                tasks.push(newTask);
+            }
+
+            saveStorage();
+            closeCreateModal();
+            renderTasks();
+        }
+
+        function moveTaskStatus(id, newStatus) {
+            const index = tasks.findIndex(t => t.id === id);
+            if (index > -1) {
+                tasks[index].status = TASK_STATUSES.has(newStatus) ? newStatus : tasks[index].status;
+                saveStorage();
+                renderTasks();
+            }
+        }
+
+        function toggleComplete(id) {
+            const index = tasks.findIndex(t => t.id === id);
+            if (index > -1) {
+                tasks[index].status = tasks[index].status === 'Completed' ? 'In Progress' : 'Completed';
+                saveStorage();
+                renderTasks();
+            }
+        }
+
+        function editTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+
+            document.getElementById('task-id').value = task.id;
+            document.getElementById('task-title').value = task.title;
+            document.getElementById('task-category').value = task.category;
+            document.getElementById('task-priority').value = task.priority;
+            document.getElementById('task-status').value = task.status;
+            document.getElementById('task-date').value = task.date || '';
+            document.getElementById('task-tags').value = task.tags ? task.tags.join(', ') : '';
+            document.getElementById('task-notes').value = task.notes || '';
+
+            document.getElementById('modal-title').innerHTML = `<i class="fa-solid fa-pen text-indigo-400"></i> Edit Protocol Parameters`;
+            document.getElementById('task-modal').classList.remove('hidden');
+        }
+
+        function deleteTask(id) {
+            if (!confirm("Are you sure you want to delete this task?")) return;
+            tasks = tasks.filter(t => t.id !== id);
+            saveStorage();
+            renderTasks();
+        }
+
+        function clearCompletedTasks() {
+            if (!confirm("Clear all completed tasks?")) return;
+            tasks = tasks.filter(t => t.status !== 'Completed');
+            saveStorage();
+            renderTasks();
+        }
+
+        // --- Pomodoro Focus Timer ---
+        function togglePomodoro() {
+            const btn = document.getElementById('pomo-start-btn');
+            if (isPomoRunning) {
+                clearInterval(pomoInterval);
+                isPomoRunning = false;
+                btn.innerHTML = `<i class="fa-solid fa-play mr-1"></i> Resume`;
+                btn.className = "flex-1 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow transition-all";
+            } else {
+                isPomoRunning = true;
+                btn.innerHTML = `<i class="fa-solid fa-pause mr-1"></i> Pause`;
+                btn.className = "flex-1 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold shadow transition-all";
+                pomoInterval = setInterval(tickPomodoro, 1000);
+            }
+        }
+
+        function tickPomodoro() {
+            if (pomoTime > 0) {
+                pomoTime--;
+                updatePomodoroDisplay();
+            } else {
+                clearInterval(pomoInterval);
+                isPomoRunning = false;
+                alert("Pomodoro session completed! Time for a short break.");
+                resetPomodoro();
+            }
+        }
+
+        function resetPomodoro() {
+            clearInterval(pomoInterval);
+            isPomoRunning = false;
+            pomoTime = 25 * 60;
+            updatePomodoroDisplay();
+            const btn = document.getElementById('pomo-start-btn');
+            btn.innerHTML = `<i class="fa-solid fa-play mr-1"></i> Start`;
+            btn.className = "flex-1 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow transition-all";
+        }
+
+        function updatePomodoroDisplay() {
+            const mins = Math.floor(pomoTime / 60);
+            const secs = pomoTime % 60;
+            document.getElementById('pomo-display').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+            // Update Ring SVG Offset
+            const ring = document.getElementById('pomo-ring');
+            const circumference = 2 * Math.PI * 42; // ~263.89
+            const offset = circumference - (pomoTime / pomoMax) * circumference;
+            ring.style.strokeDashoffset = offset;
+        }
+
+        // --- Ambient Sound Simulation ---
+        function toggleAmbientSound(type) {
+            if (type === 'off') {
+                console.log("Ambient Audio muted.");
+            } else {
+                console.log(`Ambient Audio set to: ${type}`);
+            }
+        }
+
+        // --- Export / Import JSON & CSV ---
+        function exportJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
+            const a = document.createElement('a');
+            a.href = dataStr;
+            a.download = `Nexus_Tasks_Backup_${Date.now()}.json`;
+            a.click();
+        }
+
+        function exportCSV() {
+            let csv = "ID,Title,Category,Priority,Status,Date,Notes\n";
+            tasks.forEach(t => {
+                csv += `"${t.id}","${t.title.replace(/"/g, '""')}","${t.category}","${t.priority}","${t.status}","${t.date || ''}","${(t.notes || '').replace(/"/g, '""')}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Nexus_Tasks_${Date.now()}.csv`;
+            a.click();
+        }
+
+        function restoreJSON(input) {
+            if (input.files.length === 0) return;
+            if (input.files[0].size > 5 * 1024 * 1024) { alert('Backup files must be smaller than 5 MB.'); input.value = ''; return; }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = (function(){ try { return JSON.parse(e.target.result); } catch(e) { return null; } })();
+                    if (Array.isArray(imported)) {
+                        tasks = imported.slice(0, 500).map(normalizeTask).filter(Boolean);
+                        saveStorage();
+                        renderTasks();
+                        alert("Tasks successfully restored from JSON!");
+                    }
+                } catch (err) {
+                    alert("Invalid JSON backup file.");
+                }
+            };
+            reader.readAsText(input.files[0]);
+        }
+    </script>
+</body>
+</html>

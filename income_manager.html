@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+
+<head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self'; worker-src 'self' blob:;">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <script src="security.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FinTrack Pro - Modern LKR Finance</title>
+
+    <!-- Embedded Favicon -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%236366f1' d='M64 32C28.7 32 0 60.7 0 96v320c0 35.3 28.7 64 64 64h384c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm280 192c-17.7 0-32-14.3-32-32s14.3-32 32-32h168v64H344z'/%3E%3C/svg%3E">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- PDF Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        primary: '#6366f1', // Indigo 500
+                        primaryHover: '#4f46e5', // Indigo 600
+                        secondary: '#10B981', // Emerald 500
+                        accent: '#8b5cf6', // Violet 500
+                        danger: '#f43f5e', // Rose 500
+                        darkBg: '#09090b', // Zinc 950
+                        darkCard: '#18181b', // Zinc 900
+                        darkBorder: '#27272a', // Zinc 800
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'spin-slow': 'spin 3s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Styles & Animations */
+        body {
+            -webkit-tap-highlight-color: transparent;
+            background-color: #f4f4f5; /* Zinc 100 */
+        }
+        .dark body {
+            background-color: #09090b;
+        }
+
+        .view-enter {
+            animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Modern Spinner */
+        .loader {
+            border: 3px solid rgba(99, 102, 241, 0.2);
+            border-top: 3px solid #6366f1;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 1s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #3f3f46; }
+
+        .input-currency { padding-left: 3.5rem !important; }
+
+        /* Sort Icons */
+        .sort-icon { margin-left: 6px; opacity: 0.2; transition: all 0.2s ease; }
+        .sort-active { opacity: 1; color: #6366f1; transform: scale(1.1); }
+        .dark .sort-active { color: #818CF8; }
+
+        /* Glass Cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .dark .glass-card {
+            background: rgba(24, 24, 27, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+
+  <!-- XSS Protection: Safe escaping utility -->
+  <script>
+    // Global safe text utility - use this instead of innerHTML for user data
+    window.safeText = function(str) {
+      const d = document.createElement('div');
+      d.textContent = String(str || '');
+      return d.innerHTML;
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+</head>
+
+<body class="text-zinc-800 dark:text-zinc-200 h-screen overflow-hidden flex flex-col md:flex-row transition-colors duration-300">
+
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen" class="fixed inset-0 bg-zinc-50 dark:bg-darkBg z-[60] flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="relative">
+            <div class="loader mb-6 relative z-10"></div>
+            <div class="absolute inset-0 bg-primary/20 blur-xl rounded-full"></div>
+        </div>
+        <h2 class="text-2xl font-bold text-zinc-800 dark:text-white tracking-tight">FinTrack <span class="text-primary">Pro</span></h2>
+        <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-2 font-medium">Securing your financial data...</p>
+    </div>
+
+    <!-- MOBILE HEADER -->
+    <div class="w-full glass-card shadow-sm z-50 md:hidden flex justify-between items-center p-4 border-b border-zinc-200 dark:border-darkBorder h-16 fixed top-0 left-0 transition-colors duration-300">
+        <div class="flex items-center gap-2">
+            <div class="bg-gradient-to-tr from-primary to-accent p-1.5 rounded-lg text-white shadow-lg shadow-primary/30">
+                <i class="fa-solid fa-wallet text-sm"></i>
+            </div>
+            <h1 class="font-bold text-lg text-zinc-900 dark:text-white tracking-tight">FinTrack</h1>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="toggleTheme()" class="text-zinc-500 dark:text-zinc-400 focus:outline-none p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
+                <i id="theme-icon-mobile" class="fa-solid fa-moon"></i>
+            </button>
+            <button onclick="toggleSidebar()" class="text-zinc-800 dark:text-zinc-200 focus:outline-none p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
+                <i class="fa-solid fa-bars text-lg"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 bg-white/95 dark:bg-darkCard/95 backdrop-blur-xl w-72 h-full transform -translate-x-full md:translate-x-0 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] z-40 border-r border-zinc-200 dark:border-darkBorder flex flex-col pt-16 md:pt-0 shadow-2xl md:shadow-none md:relative">
+        <div class="p-6 items-center justify-start border-b border-zinc-100 dark:border-zinc-800/50 hidden md:flex gap-3">
+            <div class="bg-gradient-to-tr from-primary to-accent w-10 h-10 flex items-center justify-center rounded-xl text-white shadow-lg shadow-primary/30">
+                <i class="fa-solid fa-wallet text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-xl text-zinc-900 dark:text-white tracking-tight leading-none">FinTrack</h1>
+                <span class="text-[10px] font-bold tracking-widest uppercase text-primary dark:text-accent mt-1 block">Pro Edition</span>
+            </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-6 px-4">
+            <p class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-4 px-2">Menu</p>
+            <ul class="space-y-1.5">
+                <li><button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-item w-full text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 rounded-xl transition-all duration-200 flex items-center gap-3"><i class="fa-solid fa-table-cells-large w-5 text-center text-lg transition-transform"></i> Dashboard</button></li>
+                <li><button onclick="switchView('entry')" id="nav-entry" class="nav-item w-full text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 rounded-xl transition-all duration-200 flex items-center gap-3"><i class="fa-solid fa-circle-plus w-5 text-center text-lg transition-transform"></i> Add Record</button></li>
+                <li><button onclick="switchView('expenses')" id="nav-expenses" class="nav-item w-full text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 rounded-xl transition-all duration-200 flex items-center gap-3"><i class="fa-solid fa-money-bill-transfer w-5 text-center text-lg transition-transform"></i> Expenses</button></li>
+                <li><button onclick="switchView('categories')" id="nav-categories" class="nav-item w-full text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 rounded-xl transition-all duration-200 flex items-center gap-3"><i class="fa-solid fa-layer-group w-5 text-center text-lg transition-transform"></i> Categories</button></li>
+                <li><button onclick="switchView('reports')" id="nav-reports" class="nav-item w-full text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 rounded-xl transition-all duration-200 flex items-center gap-3"><i class="fa-solid fa-chart-line w-5 text-center text-lg transition-transform"></i> Analytics</button></li>
+            </ul>
+            
+            <p class="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mt-8 mb-4 px-2">System</p>
+            <ul class="space-y-1.5">
+                <li><button onclick="switchView('settings')" id="nav-settings" class="nav-item w-full text-left px-4 py-3 font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 rounded-xl transition-all duration-200 flex items-center gap-3"><i class="fa-solid fa-gear w-5 text-center text-lg transition-transform"></i> Settings</button></li>
+            </ul>
+        </nav>
+
+        <div class="p-5 border-t border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-darkCard/30">
+            <button onclick="toggleTheme()" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 hover:shadow-md transition-all duration-300 group shadow-sm">
+                <span class="text-sm font-semibold">Theme</span>
+                <div class="bg-zinc-100 dark:bg-zinc-700 p-1.5 rounded-lg group-hover:scale-110 transition-transform">
+                    <i id="theme-icon-desktop" class="fa-solid fa-moon text-primary dark:text-yellow-400"></i>
+                </div>
+            </button>
+        </div>
+    </aside>
+
+    <!-- OVERLAY -->
+    <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-zinc-900/60 z-30 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 h-full overflow-y-auto overflow-x-hidden pt-16 md:pt-0 p-4 md:p-8 relative w-full transition-colors duration-300 relative">
+        
+        <!-- Decorative Background Glow -->
+        <div class="fixed top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/20 blur-[120px] rounded-full pointer-events-none hidden dark:block"></div>
+        <div class="fixed bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-accent/10 blur-[120px] rounded-full pointer-events-none hidden dark:block"></div>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="fixed top-20 md:top-8 right-4 md:right-8 bg-zinc-900/90 dark:bg-white/95 backdrop-blur-lg text-white dark:text-zinc-900 px-5 py-3.5 rounded-2xl shadow-2xl transform translate-x-[150%] transition-transform duration-300 ease-out z-[100] flex items-center gap-3 border border-zinc-700 dark:border-white min-w-[250px]">
+            <div class="bg-emerald-500/20 text-emerald-400 dark:text-emerald-500 rounded-full p-1">
+                <i class="fa-solid fa-circle-check text-xl"></i>
+            </div>
+            <span id="toast-msg" class="text-sm font-bold tracking-wide">Success</span>
+        </div>
+
+        <!-- VIEW: DASHBOARD -->
+        <div id="view-dashboard" class="view-enter pb-10">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-end mb-8 gap-4">
+                <div>
+                    <h2 class="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">Overview</h2>
+                    <p class="text-zinc-500 dark:text-zinc-400 mt-1 text-sm font-medium">Here's what's happening with your finances.</p>
+                </div>
+                <div class="bg-white dark:bg-darkCard px-4 py-2 rounded-xl border border-zinc-200 dark:border-darkBorder shadow-sm inline-flex items-center gap-2">
+                    <i class="fa-regular fa-calendar text-primary"></i>
+                    <span class="text-sm text-zinc-600 dark:text-zinc-300 font-semibold">Period:</span>
+                    <span id="current-period-label" class="font-bold text-primary dark:text-accent text-sm">This Month</span>
+                </div>
+            </div>
+
+            <!-- Global Net Worth Card -->
+            <div class="bg-gradient-to-br from-indigo-600 via-primary to-accent p-8 rounded-3xl shadow-xl shadow-primary/20 border border-white/10 text-white relative overflow-hidden mb-8 group hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300">
+                <div class="absolute -right-20 -top-20 bg-white/10 w-64 h-64 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-500"></div>
+                <div class="absolute -left-10 -bottom-10 bg-black/10 w-40 h-40 rounded-full blur-2xl"></div>
+                
+                <div class="flex items-center justify-between mb-4 relative z-10">
+                    <div class="flex items-center gap-2">
+                        <div class="bg-white/20 backdrop-blur-md w-10 h-10 flex items-center justify-center rounded-xl border border-white/20">
+                            <i class="fa-solid fa-vault text-white"></i>
+                        </div>
+                        <span class="text-white/80 text-sm font-bold uppercase tracking-widest">Total Net Worth</span>
+                    </div>
+                    <span class="bg-white/20 text-white text-xs px-2.5 py-1 rounded-md font-bold backdrop-blur-sm border border-white/10">ALL TIME</span>
+                </div>
+                <div class="relative z-10 flex items-baseline gap-2 mt-2">
+                    <p class="text-4xl md:text-5xl font-extrabold tracking-tight truncate" id="dash-global-balance">LKR 0.00</p>
+                </div>
+            </div>
+
+            <!-- Period Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+                <!-- Income -->
+                <div class="bg-white dark:bg-darkCard p-6 rounded-3xl shadow-sm border border-zinc-200/60 dark:border-darkBorder hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 w-12 h-12 flex items-center justify-center rounded-2xl">
+                            <i class="fa-solid fa-arrow-trend-up text-xl"></i>
+                        </div>
+                        <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Income</span>
+                    </div>
+                    <p class="text-2xl font-extrabold text-zinc-800 dark:text-white truncate" id="dash-income">LKR 0.00</p>
+                </div>
+
+                <!-- Expense -->
+                <div class="bg-white dark:bg-darkCard p-6 rounded-3xl shadow-sm border border-zinc-200/60 dark:border-darkBorder hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 w-12 h-12 flex items-center justify-center rounded-2xl">
+                            <i class="fa-solid fa-arrow-trend-down text-xl"></i>
+                        </div>
+                        <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Expense</span>
+                    </div>
+                    <p class="text-2xl font-extrabold text-zinc-800 dark:text-white truncate" id="dash-expense">LKR 0.00</p>
+                </div>
+
+                <!-- Invested -->
+                <div class="bg-white dark:bg-darkCard p-6 rounded-3xl shadow-sm border border-zinc-200/60 dark:border-darkBorder hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="bg-accent/10 dark:bg-accent/10 text-accent w-12 h-12 flex items-center justify-center rounded-2xl">
+                            <i class="fa-solid fa-seedling text-xl"></i>
+                        </div>
+                        <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Invested</span>
+                    </div>
+                    <p class="text-2xl font-extrabold text-zinc-800 dark:text-white truncate" id="dash-invest">LKR 0.00</p>
+                </div>
+
+                <!-- Period Balance -->
+                <div class="bg-white dark:bg-darkCard p-6 rounded-3xl shadow-sm border border-zinc-200/60 dark:border-darkBorder hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 w-12 h-12 flex items-center justify-center rounded-2xl">
+                            <i class="fa-solid fa-scale-balanced text-xl"></i>
+                        </div>
+                        <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Savings</span>
+                    </div>
+                    <p class="text-2xl font-extrabold text-zinc-800 dark:text-white truncate" id="dash-balance">LKR 0.00</p>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white dark:bg-darkCard p-6 rounded-3xl shadow-sm border border-zinc-200/60 dark:border-darkBorder lg:col-span-2 transition-colors">
+                    <h3 class="font-bold text-zinc-900 dark:text-white tracking-tight mb-6 flex items-center gap-2"><i class="fa-solid fa-chart-column text-primary"></i> Financial Trend</h3>
+                    <div class="relative h-64 w-full">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-darkCard p-6 rounded-3xl shadow-sm border border-zinc-200/60 dark:border-darkBorder transition-colors">
+                    <h3 class="font-bold text-zinc-900 dark:text-white tracking-tight mb-6 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-accent"></i> Spending Breakdown</h3>
+                    <div class="relative h-56 w-full flex justify-center">
+                        <canvas id="catChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: ENTRY FORM -->
+        <div id="view-entry" class="hidden view-enter max-w-3xl mx-auto pb-10">
+            <div class="mb-8">
+                <h2 class="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight" id="form-title">Add New Record</h2>
+                <p class="text-zinc-500 dark:text-zinc-400 mt-1 text-sm font-medium">Enter your daily income, expenses, and savings.</p>
+            </div>
+
+            <div class="bg-white dark:bg-darkCard rounded-3xl shadow-sm border border-zinc-200/60 dark:border-darkBorder p-6 md:p-8 transition-colors">
+                <form id="finance-form" onsubmit="handleFormSubmit(event)">
+                    <input type="hidden" id="edit-id">
+
+                    <!-- Date & Type -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">Date</label>
+                            <div class="relative">
+                                <i class="fa-regular fa-calendar absolute left-4 top-3.5 text-zinc-400"></i>
+                                <input type="date" id="inp-date" required class="w-full rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700/50 border pl-11 p-3 focus:bg-white dark:focus:bg-darkCard focus:ring-2 focus:ring-primary/50 focus:border-primary dark:text-white outline-none transition-all text-sm font-semibold">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">Earner Type</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-briefcase absolute left-4 top-3.5 text-zinc-400"></i>
+                                <select id="inp-earner-type" class="w-full rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700/50 border pl-11 p-3 focus:bg-white dark:focus:bg-darkCard focus:ring-2 focus:ring-primary/50 focus:border-primary dark:text-white outline-none transition-all text-sm font-semibold appearance-none">
+                                    <option value="daily">Daily Earner</option>
+                                    <option value="weekly">Weekly Earner</option>
+                                    <option value="monthly">Monthly Earner</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-4 text-xs text-zinc-400 pointer-events-none"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Money Inputs -->
+                    <div class="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/30 border border-zinc-100 dark:border-zinc-800 mb-6 space-y-6">
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">Income</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-3.5 text-zinc-400 text-sm font-bold pointer-events-none">LKR</span>
+                                <input type="number" step="0.01" min="0" id="inp-income" placeholder="0.00" class="input-currency w-full rounded-xl bg-white dark:bg-darkCard border-zinc-200 dark:border-zinc-700 border p-3 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 dark:text-white outline-none transition-all text-base font-bold shadow-sm" oninput="calculateBalance()">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">Daily Expense</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-3.5 text-zinc-400 text-sm font-bold pointer-events-none">LKR</span>
+                                    <input type="number" step="0.01" min="0" id="inp-expense" placeholder="0.00" class="input-currency w-full rounded-xl bg-white dark:bg-darkCard border-zinc-200 dark:border-zinc-700 border p-3 focus:ring-2 focus:ring-rose-500/30 focus:border-rose-500 dark:text-white outline-none transition-all text-base font-bold shadow-sm" oninput="calculateBalance()">
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">Next Day Needs</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-3.5 text-zinc-400 text-sm font-bold pointer-events-none">LKR</span>
+                                    <input type="number" step="0.01" min="0" id="inp-next-expense" placeholder="0.00" class="input-currency w-full rounded-xl bg-white dark:bg-darkCard border-zinc-200 dark:border-zinc-700 border p-3 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 dark:text-white outline-none transition-all text-base font-bold shadow-sm" oninput="calculateBalance()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Calculation Card -->
+                    <div class="bg-gradient-to-r from-indigo-50 to-primary/10 dark:from-primary/10 dark:to-accent/10 rounded-2xl p-5 mb-6 border border-primary/20">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-zinc-600 dark:text-indigo-200/80 text-sm font-bold">Net Balance (Inc - Exp)</span>
+                            <span id="calc-balance" class="font-extrabold text-lg text-zinc-900 dark:text-white">LKR 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center border-t border-primary/20 mt-3 pt-3">
+                            <span class="text-primary dark:text-accent text-sm font-extrabold flex items-center gap-2">
+                                <i class="fa-solid fa-lightbulb text-yellow-500"></i> Suggested Investment
+                            </span>
+                            <span id="calc-suggestion" class="font-extrabold text-lg text-primary dark:text-accent">LKR 0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Investment Entry -->
+                    <div class="mb-8 space-y-2">
+                        <label class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">Actual Investment</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-3.5 text-accent text-sm font-extrabold pointer-events-none">LKR</span>
+                            <input type="number" step="0.01" min="0" id="inp-invest" placeholder="0.00" class="input-currency w-full rounded-xl bg-white dark:bg-zinc-900 border-accent/40 dark:border-accent/50 border-2 p-3 focus:ring-4 focus:ring-accent/20 focus:border-accent outline-none transition-all text-lg font-extrabold text-accent dark:text-accent shadow-sm">
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-4 pt-2">
+                        <button type="button" onclick="cancelEdit()" class="flex-1 px-4 py-3.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-sm font-bold">Cancel</button>
+                        <button type="submit" id="btn-save" class="flex-[2] px-4 py-3.5 bg-gradient-to-r from-primary to-primaryHover text-white rounded-xl hover:shadow-lg hover:shadow-primary/30 transform hover:-translate-y-0.5 transition-all text-sm font-bold flex justify-center items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> Save Record
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- VIEW: EXPENSES -->
+        <div id="view-expenses" class="hidden view-enter max-w-3xl mx-auto pb-10">
+            <div class="mb-8">
+                <h2 class="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">Track Expenses</h2>
+                <p class="text-zinc-500 dark:text-zinc-400 mt-1 text-sm font-medium">Log individual expenses against categories.</p>
+            </div>
+
+            <!-- Expense Entry Form -->
+            <div class="bg-white dark:bg-darkCard rounded-3xl shadow-sm border border-zinc-200/60 dark:border-darkBorder p-6 md:p-8 mb-8">
+                <form onsubmit="handleExpenseSubmit(event)">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">Category</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-layer-group absolute left-4 top-3.5 text-zinc-400"></i>
+                                <select id="exp-category" class="w-full rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700/50 border pl-11 p-3 focus:bg-white dark:focus:bg-darkCard focus:ring-2 focus:ring-rose-500/30 focus:border-rose-500 dark:text-white outline-none transition-all text-sm font-semibold appearance-none">
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-4 text-xs text-zinc-400 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">Amount</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-3.5 text-zinc-400 text-sm font-bold pointer-events-none">LKR</span>
+                                <input type="number" step="0.01" min="0" id="exp-amount" placeholder="0.00" class="input-currency w-full rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700/50 border p-3 focus:bg-white dark:focus:bg-darkCard focus:ring-2 focus:ring-rose-500/30 focus:border-rose-500 dark:text-white outline-none transition-all text-base font-bold shadow-sm" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="w-full md:w-auto bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white px-8 py-3.5 rounded-xl font-bold text-sm transition-all hover:shadow-lg hover:shadow-rose-500/30 transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-minus-circle"></i> Add Expense
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Budget Tracker -->
+            <h3 class="font-extrabold text-lg text-zinc-800 dark:text-zinc-200 mb-4 px-1">Budget Overview</h3>
+            <div id="budget-tracker" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- VIEW: CATEGORIES -->
+        <div id="view-categories" class="hidden view-enter max-w-3xl mx-auto pb-10">
+            <div class="mb-8">
+                <h2 class="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">Manage Categories</h2>
+                <p class="text-zinc-500 dark:text-zinc-400 mt-1 text-sm font-medium">Set limits to keep your spending in check.</p>
+            </div>
+
+            <!-- Add Category Form -->
+            <div class="bg-white dark:bg-darkCard p-6 rounded-3xl shadow-sm border border-zinc-200/60 dark:border-darkBorder mb-8">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-[2]">
+                        <input type="text" id="cat-name-new" placeholder="E.g. Groceries" class="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 rounded-xl p-3.5 text-sm font-medium outline-none focus:bg-white dark:focus:bg-darkCard focus:border-primary focus:ring-2 focus:ring-primary/20 dark:text-white transition-all">
+                    </div>
+                    <div class="flex-1">
+                        <input type="number" id="cat-limit-new" placeholder="Limit (LKR)" class="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 rounded-xl p-3.5 text-sm font-medium outline-none focus:bg-white dark:focus:bg-darkCard focus:border-primary focus:ring-2 focus:ring-primary/20 dark:text-white transition-all">
+                    </div>
+                    <button onclick="addNewCategory()" class="bg-primary text-white px-8 py-3.5 rounded-xl hover:bg-primaryHover text-sm font-bold transition-all shadow-md hover:shadow-primary/30 transform hover:-translate-y-0.5 whitespace-nowrap">
+                        <i class="fa-solid fa-plus mr-1"></i> Add
+                    </button>
+                </div>
+            </div>
+
+            <!-- Category List -->
+            <div class="bg-white dark:bg-darkCard rounded-3xl shadow-sm border border-zinc-200/60 dark:border-darkBorder overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-zinc-50/80 dark:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800">
+                        <tr>
+                            <th class="p-4 text-xs tracking-wider uppercase font-bold text-zinc-500 dark:text-zinc-400">Category</th>
+                            <th class="p-4 text-xs tracking-wider uppercase font-bold text-zinc-500 dark:text-zinc-400 text-right">Limit (LKR)</th>
+                            <th class="p-4 text-xs tracking-wider uppercase font-bold text-zinc-500 dark:text-zinc-400 text-center w-24">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="category-management-list" class="text-sm text-zinc-700 dark:text-zinc-300 divide-y divide-zinc-100 dark:divide-zinc-800/50">
+                        <!-- Populated JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- VIEW: REPORTS & TABLE -->
+        <div id="view-reports" class="hidden view-enter pb-10">
+            <div class="mb-8">
+                <h2 class="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">Analytics & Reports</h2>
+                <p class="text-zinc-500 dark:text-zinc-400 mt-1 text-sm font-medium">Review your historical transaction data.</p>
+            </div>
+
+            <!-- Controls: Filter & Export -->
+            <div class="bg-white dark:bg-darkCard p-4 md:p-5 rounded-3xl shadow-sm border border-zinc-200/60 dark:border-darkBorder mb-6 flex flex-col xl:flex-row gap-4 justify-between items-center transition-colors">
+                <!-- Filters -->
+                <div class="flex flex-col sm:flex-row gap-3 w-full xl:w-auto">
+                    <div class="flex bg-zinc-100 dark:bg-zinc-800/80 p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700/50">
+                        <button onclick="setFilter('monthly')" class="filter-btn active flex-1 px-5 py-2 rounded-lg text-xs font-bold transition-all" data-filter="monthly">Monthly</button>
+                        <button onclick="setFilter('yearly')" class="filter-btn flex-1 px-5 py-2 rounded-lg text-xs font-bold transition-all" data-filter="yearly">Yearly</button>
+                    </div>
+
+                    <input type="month" id="report-date-picker" class="border border-zinc-200 dark:border-zinc-700/50 rounded-xl px-4 py-2 text-sm font-semibold bg-zinc-50 dark:bg-zinc-800/50 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all hover:bg-white dark:hover:bg-darkCard" onchange="refreshReports()">
+
+                    <select id="report-cat-filter" class="border border-zinc-200 dark:border-zinc-700/50 rounded-xl px-4 py-2 text-sm font-semibold bg-zinc-50 dark:bg-zinc-800/50 dark:text-white outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-w-[160px] appearance-none cursor-pointer hover:bg-white dark:hover:bg-darkCard" onchange="refreshReports()">
+                        <option value="all">All Categories</option>
+                    </select>
+                </div>
+
+                <!-- Export PDF -->
+                <button onclick="exportPDF()" class="w-full xl:w-auto bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-6 py-2.5 rounded-xl hover:bg-zinc-800 dark:hover:bg-white transition-all text-sm font-bold flex items-center justify-center gap-2 shadow-md transform hover:-translate-y-0.5">
+                    <i class="fa-solid fa-file-pdf text-rose-500"></i> Export PDF
+                </button>
+            </div>
+
+            <!-- Table Container -->
+            <div class="bg-white dark:bg-darkCard rounded-3xl shadow-sm border border-zinc-200/60 dark:border-darkBorder overflow-hidden transition-colors">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[850px]">
+                        <thead class="bg-zinc-50/80 dark:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800 cursor-pointer select-none">
+                            <tr>
+                                <th onclick="sortData('date')" class="p-4 pl-6 text-xs tracking-wider uppercase font-extrabold text-zinc-500 dark:text-zinc-400 hover:text-primary transition-colors group">Date <i class="fa-solid fa-sort sort-icon" id="sort-date"></i></th>
+                                <th onclick="sortData('category')" class="p-4 text-xs tracking-wider uppercase font-extrabold text-zinc-500 dark:text-zinc-400 hover:text-primary transition-colors">Category <i class="fa-solid fa-sort sort-icon" id="sort-category"></i></th>
+                                <th onclick="sortData('income')" class="p-4 text-xs tracking-wider uppercase font-extrabold text-zinc-500 dark:text-zinc-400 text-right hover:text-primary transition-colors">Income <i class="fa-solid fa-sort sort-icon" id="sort-income"></i></th>
+                                <th onclick="sortData('expense')" class="p-4 text-xs tracking-wider uppercase font-extrabold text-zinc-500 dark:text-zinc-400 text-right hover:text-primary transition-colors">Expense <i class="fa-solid fa-sort sort-icon" id="sort-expense"></i></th>
+                                <th onclick="sortData('investment')" class="p-4 text-xs tracking-wider uppercase font-extrabold text-zinc-500 dark:text-zinc-400 text-right hover:text-primary transition-colors">Invest <i class="fa-solid fa-sort sort-icon" id="sort-investment"></i></th>
+                                <th class="p-4 text-xs tracking-wider uppercase font-extrabold text-zinc-500 dark:text-zinc-400 text-right">Balance</th>
+                                <th class="p-4 pr-6 text-xs tracking-wider uppercase font-extrabold text-zinc-500 dark:text-zinc-400 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="full-report-body" class="text-sm font-medium text-zinc-700 dark:text-zinc-300 divide-y divide-zinc-100 dark:divide-zinc-800/50">
+                            <!-- JS Generated -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden p-16 text-center">
+                    <div class="bg-zinc-50 dark:bg-zinc-800/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-inbox text-3xl text-zinc-300 dark:text-zinc-600"></i>
+                    </div>
+                    <p class="text-zinc-500 dark:text-zinc-400 font-medium">No transactions found for this selection.</p>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div id="pagination-controls" class="p-4 px-6 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center hidden bg-zinc-50/50 dark:bg-zinc-800/20">
+                    <button onclick="changePage(-1)" class="text-xs font-bold text-zinc-600 bg-white border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 hover:text-primary hover:border-primary dark:text-zinc-300 px-4 py-2 rounded-lg disabled:opacity-40 disabled:hover:border-zinc-200 transition-all shadow-sm" id="btn-prev"><i class="fa-solid fa-chevron-left mr-1 text-[10px]"></i> Prev</button>
+                    <span class="text-xs font-bold text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 rounded-md" id="page-info">Page 1</span>
+                    <button onclick="changePage(1)" class="text-xs font-bold text-zinc-600 bg-white border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 hover:text-primary hover:border-primary dark:text-zinc-300 px-4 py-2 rounded-lg disabled:opacity-40 disabled:hover:border-zinc-200 transition-all shadow-sm" id="btn-next">Next <i class="fa-solid fa-chevron-right ml-1 text-[10px]"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: SETTINGS -->
+        <div id="view-settings" class="hidden view-enter max-w-2xl pb-10">
+            <div class="mb-8">
+                <h2 class="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">System Settings</h2>
+                <p class="text-zinc-500 dark:text-zinc-400 mt-1 text-sm font-medium">Manage your data and preferences.</p>
+            </div>
+
+            <!-- Backup & Restore -->
+            <div class="bg-white dark:bg-darkCard p-6 md:p-8 rounded-3xl shadow-sm border border-zinc-200/60 dark:border-darkBorder mb-6 relative overflow-hidden">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="bg-primary/10 text-primary w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-cloud"></i></div>
+                    <h3 class="font-bold text-zinc-800 dark:text-zinc-200 text-base">Backup & Recovery</h3>
+                </div>
+                <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-6 pl-11">Export your data securely as a JSON file, or restore from a previous backup to sync across devices.</p>
+
+                <div class="flex flex-col sm:flex-row gap-4 pl-11">
+                    <button onclick="exportData()" class="flex-1 flex items-center justify-center gap-2 bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-none px-5 py-3.5 rounded-xl hover:bg-zinc-800 dark:hover:bg-white transition-all font-bold text-sm shadow-md transform hover:-translate-y-0.5">
+                        <i class="fa-solid fa-download"></i> Export JSON
+                    </button>
+
+                    <div class="flex-1 relative group">
+                        <input type="file" id="import-file" accept=".json" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="importData(this)">
+                        <button class="w-full flex items-center justify-center gap-2 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 px-5 py-3.5 rounded-xl group-hover:bg-zinc-100 dark:group-hover:bg-zinc-700/50 transition-all font-bold text-sm">
+                            <i class="fa-solid fa-upload"></i> Restore JSON
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="bg-rose-50/50 dark:bg-rose-500/5 p-6 md:p-8 rounded-3xl border border-rose-200 dark:border-rose-900/30 relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 text-rose-500/10 dark:text-rose-500/5">
+                    <i class="fa-solid fa-triangle-exclamation text-9xl"></i>
+                </div>
+                <div class="flex items-center gap-3 mb-2 relative z-10">
+                    <div class="bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-fire"></i></div>
+                    <h3 class="font-bold text-rose-700 dark:text-rose-400 text-base">Danger Zone</h3>
+                </div>
+                <p class="text-sm text-rose-600/80 dark:text-rose-400/70 mb-6 pl-11 relative z-10">This action is irreversible. All your stored records and categories will be permanently deleted from this browser.</p>
+                <div class="pl-11 relative z-10">
+                    <button onclick="clearAllData()" class="bg-white dark:bg-rose-950 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 px-6 py-3 rounded-xl hover:bg-rose-600 hover:text-white dark:hover:bg-rose-600 dark:hover:text-white transition-all text-sm font-bold shadow-sm">
+                        Factory Reset App
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- APPLICATION LOGIC -->
+    <script>
+        // --- State Management ---
+        const AppState = {
+            transactions: [],
+            categories: [
+                { name: 'Food', limit: 20000 },
+                { name: 'Transport', limit: 10000 },
+                { name: 'Rent', limit: 50000 },
+                { name: 'Utilities', limit: 15000 },
+                { name: 'Entertainment', limit: 5000 }
+            ],
+            currentFilter: 'monthly',
+            filterDate: new Date(),
+            filterCategory: 'all',
+            sortKey: 'date',
+            sortAsc: false,
+            currentPage: 1,
+            itemsPerPage: 10,
+            editingId: null
+        };
+
+        const { jsPDF } = window.jspdf;
+
+        const MAX_RECORDS = 2_000;
+        const cleanText = (value, max = 80) => String(value ?? '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, max);
+        const boundedNumber = (value, fallback = 0) => {
+            const number = Number(value);
+            return Number.isFinite(number) ? Math.max(0, Math.min(number, 1_000_000_000)) : fallback;
+        };
+        const isIsoDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''));
+        const normalizeTransaction = (record) => {
+            const id = Number(record && record.id);
+            if (!Number.isSafeInteger(id) || id <= 0) return null;
+            const income = boundedNumber(record.income), expense = boundedNumber(record.expense), investment = boundedNumber(record.investment);
+            return { id, date: isIsoDate(record.date) ? record.date : new Date().toISOString().slice(0, 10), earnerType: cleanText(record.earnerType, 30) || 'daily', category: cleanText(record.category, 80) || 'Income', income, expense, investment, nextDayExpense: boundedNumber(record.nextDayExpense), balance: income - expense - investment };
+        };
+        const normalizeCategory = (category) => {
+            const value = typeof category === 'string' ? { name: category, limit: 0 } : category;
+            const name = cleanText(value && value.name, 80);
+            return name ? { name, limit: boundedNumber(value.limit) } : null;
+        };
+        function normalizeAppData(transactions, categories) {
+            AppState.transactions = Array.isArray(transactions) ? transactions.slice(0, MAX_RECORDS).map(normalizeTransaction).filter(Boolean) : [];
+            const cleanCategories = Array.isArray(categories) ? categories.slice(0, 100).map(normalizeCategory).filter(Boolean) : [];
+            AppState.categories = cleanCategories.length ? cleanCategories : AppState.categories;
+        }
+
+        // --- Helper: Format LKR ---
+        const formatLKR = (num) => {
+            return 'LKR ' + num.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+
+        // --- Theme Management ---
+        function initTheme() {
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                updateThemeIcon('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                updateThemeIcon('light');
+            }
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                updateThemeIcon('light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                updateThemeIcon('dark');
+            }
+            if (AppState.transactions.length > 0) refreshReports();
+        }
+
+        function updateThemeIcon(mode) {
+            const iconMobile = document.getElementById('theme-icon-mobile');
+            const iconDesktop = document.getElementById('theme-icon-desktop');
+            const cls = mode === 'dark' ? 'fa-sun text-yellow-400' : 'fa-moon text-zinc-500';
+            if (iconMobile) iconMobile.className = `fa-solid ${cls}`;
+            if (iconDesktop) iconDesktop.className = `fa-solid ${cls}`;
+        }
+
+        // --- Initialization ---
+        window.addEventListener('load', () => {
+            initTheme();
+
+            setTimeout(() => {
+                const loader = document.getElementById('loading-screen');
+                loader.style.opacity = '0';
+                setTimeout(() => { loader.style.display = 'none'; }, 500);
+            }, 1000);
+
+            loadData();
+            renderCategories();
+            updateBudgetTracker();
+
+            document.getElementById('inp-date').valueAsDate = new Date();
+            const now = new Date();
+            const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            document.getElementById('report-date-picker').value = monthStr;
+
+            refreshReports();
+            updateGlobalBalance();
+        });
+
+        // --- Navigation ---
+        function switchView(viewName) {
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-primary/10', 'text-primary', 'dark:bg-primary/20', 'dark:text-indigo-300', 'border-l-4', 'border-primary');
+                el.classList.add('text-zinc-600', 'dark:text-zinc-400');
+            });
+            const activeNav = document.getElementById('nav-' + viewName);
+            if (activeNav) {
+                activeNav.classList.remove('text-zinc-600', 'dark:text-zinc-400');
+                activeNav.classList.add('bg-primary/10', 'text-primary', 'dark:bg-primary/20', 'dark:text-indigo-300', 'border-l-4', 'border-primary');
+            }
+
+            ['dashboard', 'entry', 'expenses', 'categories', 'reports', 'settings'].forEach(v => {
+                const view = document.getElementById('view-' + v);
+                view.classList.add('hidden');
+                view.classList.remove('view-enter');
+            });
+            
+            const activeView = document.getElementById('view-' + viewName);
+            activeView.classList.remove('hidden');
+            // Trigger animation re-flow
+            void activeView.offsetWidth; 
+            activeView.classList.add('view-enter');
+
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+            document.getElementById('overlay').classList.add('hidden');
+
+            if (viewName === 'dashboard' || viewName === 'reports') {
+                refreshReports();
+                updateGlobalBalance();
+            }
+        }
+
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('overlay');
+            if (sb.classList.contains('-translate-x-full')) {
+                sb.classList.remove('-translate-x-full');
+                ov.classList.remove('hidden');
+            } else {
+                sb.classList.add('-translate-x-full');
+                ov.classList.add('hidden');
+            }
+        }
+
+        // --- Data Handling ---
+        function loadData() {
+            const savedTrans = localStorage.getItem('ft_transactions');
+            const savedCats = localStorage.getItem('ft_categories');
+            let transactions = [], categories = AppState.categories;
+            try { transactions = savedTrans ? JSON.parse(savedTrans) : []; } catch { transactions = []; }
+            try { categories = savedCats ? JSON.parse(savedCats) : categories; } catch { categories = AppState.categories; }
+            normalizeAppData(transactions, categories);
+        }
+
+        function saveData() {
+            localStorage.setItem('ft_transactions', JSON.stringify(AppState.transactions));
+            localStorage.setItem('ft_categories', JSON.stringify(AppState.categories));
+            updateGlobalBalance();
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const inc = parseFloat(document.getElementById('inp-income').value) || 0;
+            const exp = parseFloat(document.getElementById('inp-expense').value) || 0;
+            const inv = parseFloat(document.getElementById('inp-invest').value) || 0;
+            const next = parseFloat(document.getElementById('inp-next-expense').value) || 0;
+
+            if (inc < 0 || exp < 0 || inv < 0 || next < 0) {
+                showToast("Values cannot be negative!");
+                return;
+            }
+
+            const transaction = {
+                id: AppState.editingId || Date.now(),
+                date: document.getElementById('inp-date').value,
+                earnerType: document.getElementById('inp-earner-type').value,
+                category: 'Income',
+                income: inc,
+                expense: exp,
+                investment: inv,
+                nextDayExpense: next,
+                balance: inc - exp - inv
+            };
+
+            if (AppState.editingId) {
+                const index = AppState.transactions.findIndex(t => t.id === AppState.editingId);
+                if (index !== -1) AppState.transactions[index] = transaction;
+                showToast("Record Updated");
+                cancelEdit();
+            } else {
+                AppState.transactions.push(transaction);
+                showToast("Record Saved Successfully");
+                document.getElementById('finance-form').reset();
+                document.getElementById('inp-date').valueAsDate = new Date();
+                calculateBalance();
+            }
+
+            updateBudgetTracker();
+            saveData();
+            switchView('dashboard');
+        }
+
+        function handleExpenseSubmit(e) {
+            e.preventDefault();
+            const cat = document.getElementById('exp-category').value;
+            const amt = parseFloat(document.getElementById('exp-amount').value) || 0;
+
+            if (amt <= 0) { showToast("Amount must be positive!"); return; }
+
+            const transaction = {
+                id: Date.now(),
+                date: new Date().toISOString().split('T')[0],
+                earnerType: 'daily',
+                category: cat,
+                income: 0,
+                expense: amt,
+                investment: 0,
+                nextDayExpense: 0,
+                balance: -amt
+            };
+
+            AppState.transactions.push(transaction);
+            saveData();
+            refreshReports();
+            updateBudgetTracker();
+            updateGlobalBalance();
+
+            showToast("Expense Tracked!");
+            document.getElementById('exp-amount').value = '';
+        }
+
+        function updateBudgetTracker() {
+            const tracker = document.getElementById('budget-tracker');
+            tracker.innerHTML = '';
+            const now = new Date();
+            const currentMonthStats = {};
+
+            AppState.transactions.forEach(t => {
+                const d = new Date(t.date);
+                if (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && t.expense > 0) {
+                    currentMonthStats[t.category] = (currentMonthStats[t.category] || 0) + t.expense;
+                }
+            });
+
+            AppState.categories.forEach(cat => {
+                const spent = currentMonthStats[cat.name] || 0;
+                const limit = parseFloat(cat.limit) || 0;
+                const pct = limit > 0 ? (spent / limit) * 100 : 0;
+
+                let colorClass = 'bg-emerald-500 dark:bg-emerald-400';
+                if (pct > 75) colorClass = 'bg-yellow-500 dark:bg-yellow-400';
+                if (pct > 95) colorClass = 'bg-rose-500 dark:bg-rose-500';
+
+                const div = document.createElement('div');
+                div.className = "bg-white dark:bg-zinc-800/50 p-5 rounded-2xl border border-zinc-200/60 dark:border-zinc-700/50 shadow-sm";
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="font-bold text-zinc-800 dark:text-zinc-200 text-sm flex items-center gap-2"><div class="w-2 h-2 rounded-full ${colorClass}"></div> ${safeText(cat.name)}</span>
+                        <span class="text-xs font-bold ${pct > 100 ? 'text-rose-500' : 'text-zinc-500 dark:text-zinc-400'}">
+                            ${formatLKR(spent)} <span class="text-zinc-300 dark:text-zinc-600 font-normal mx-1">/</span> ${limit > 0 ? formatLKR(limit) : '∞'}
+                        </span>
+                    </div>
+                    <div class="w-full bg-zinc-100 dark:bg-zinc-700/50 rounded-full h-2 overflow-hidden relative">
+                        <div class="${colorClass} h-full rounded-full transition-all duration-700 ease-out" style="width: ${Math.min(pct, 100)}%"></div>
+                    </div>
+                 `;
+                tracker.appendChild(div);
+            });
+        }
+
+        // --- Editing Functions ---
+        function editTransaction(id) {
+            const t = AppState.transactions.find(x => x.id === id);
+            if (!t) return;
+            AppState.editingId = id;
+            document.getElementById('edit-id').value = id;
+            document.getElementById('inp-date').value = t.date;
+            document.getElementById('inp-earner-type').value = t.earnerType;
+            document.getElementById('inp-income').value = t.income > 0 ? t.income : '';
+            document.getElementById('inp-expense').value = t.expense > 0 ? t.expense : '';
+            document.getElementById('inp-invest').value = t.investment > 0 ? t.investment : '';
+            document.getElementById('inp-next-expense').value = t.nextDayExpense > 0 ? t.nextDayExpense : '';
+
+            calculateBalance();
+            document.getElementById('form-title').innerText = "Edit Record";
+            document.getElementById('btn-save').innerHTML = '<i class="fa-solid fa-check"></i> Update Record';
+            switchView('entry');
+        }
+
+        function cancelEdit() {
+            AppState.editingId = null;
+            document.getElementById('finance-form').reset();
+            document.getElementById('inp-date').valueAsDate = new Date();
+            document.getElementById('form-title').innerText = "Add New Record";
+            document.getElementById('btn-save').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Record';
+            calculateBalance();
+            switchView('dashboard');
+        }
+
+        function deleteTransaction(id) {
+            if (confirm('Permanently delete this record?')) {
+                AppState.transactions = AppState.transactions.filter(t => t.id !== id);
+                saveData();
+                refreshReports();
+                showToast("Record Deleted");
+            }
+        }
+
+        // --- Calculation Helpers ---
+        function calculateBalance() {
+            const i = parseFloat(document.getElementById('inp-income').value) || 0;
+            const e = parseFloat(document.getElementById('inp-expense').value) || 0;
+            const n = parseFloat(document.getElementById('inp-next-expense').value) || 0;
+            const bal = i - e;
+            document.getElementById('calc-balance').innerText = formatLKR(bal);
+            let sugg = Math.max(0, bal - n);
+            document.getElementById('calc-suggestion').innerText = formatLKR(sugg);
+        }
+
+        function updateGlobalBalance() {
+            const total = AppState.transactions.reduce((acc, t) => acc + (t.income - t.expense - t.investment), 0);
+            document.getElementById('dash-global-balance').innerText = formatLKR(total);
+        }
+
+        // --- Reports ---
+        function setFilter(type) {
+            AppState.currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.remove('active', 'bg-white', 'text-zinc-900', 'shadow-sm', 'dark:bg-zinc-700', 'dark:text-white');
+                b.classList.add('text-zinc-500', 'dark:text-zinc-400');
+                if (b.dataset.filter === type) {
+                    b.classList.add('active', 'bg-white', 'text-zinc-900', 'shadow-sm', 'dark:bg-zinc-700', 'dark:text-white');
+                    b.classList.remove('text-zinc-500', 'dark:text-zinc-400');
+                }
+            });
+            AppState.currentPage = 1;
+            refreshReports();
+        }
+
+        function sortData(key) {
+            if (AppState.sortKey === key) AppState.sortAsc = !AppState.sortAsc;
+            else { AppState.sortKey = key; AppState.sortAsc = true; }
+            refreshReports();
+        }
+
+        function changePage(dir) {
+            AppState.currentPage += dir;
+            refreshReports();
+        }
+
+        function refreshReports() {
+            const pickerVal = document.getElementById('report-date-picker').value;
+            AppState.filterCategory = document.getElementById('report-cat-filter').value;
+            if (pickerVal) AppState.filterDate = new Date(pickerVal + "-01");
+            const filterDate = AppState.filterDate;
+
+            let data = AppState.transactions.filter(t => {
+                const tDate = new Date(t.date);
+                let dateMatch = AppState.currentFilter === 'monthly' ? 
+                    (tDate.getMonth() === filterDate.getMonth() && tDate.getFullYear() === filterDate.getFullYear()) : 
+                    (tDate.getFullYear() === filterDate.getFullYear());
+                let catMatch = AppState.filterCategory === 'all' || t.category === AppState.filterCategory;
+                return dateMatch && catMatch;
+            });
+
+            data.sort((a, b) => {
+                let valA = AppState.sortKey === 'date' ? new Date(a.date) : a[AppState.sortKey];
+                let valB = AppState.sortKey === 'date' ? new Date(b.date) : b[AppState.sortKey];
+                if (valA < valB) return AppState.sortAsc ? -1 : 1;
+                if (valA > valB) return AppState.sortAsc ? 1 : -1;
+                return 0;
+            });
+
+            document.querySelectorAll('.sort-icon').forEach(i => i.classList.remove('sort-active'));
+            const icon = document.getElementById('sort-' + AppState.sortKey);
+            if (icon) {
+                icon.classList.add('sort-active');
+                icon.className = `fa-solid fa-sort-${AppState.sortAsc ? 'up' : 'down'} sort-icon sort-active`;
+            }
+
+            const totals = data.reduce((acc, t) => ({ inc: acc.inc + t.income, exp: acc.exp + t.expense, inv: acc.inv + t.investment, bal: acc.bal + t.balance }), { inc: 0, exp: 0, inv: 0, bal: 0 });
+
+            const totalPages = Math.ceil(data.length / AppState.itemsPerPage) || 1;
+            if (AppState.currentPage > totalPages) AppState.currentPage = totalPages;
+            if (AppState.currentPage < 1) AppState.currentPage = 1;
+
+            const start = (AppState.currentPage - 1) * AppState.itemsPerPage;
+            const paginatedData = data.slice(start, start + AppState.itemsPerPage);
+
+            const tbody = document.getElementById('full-report-body');
+            tbody.innerHTML = '';
+
+            paginatedData.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors border-b border-zinc-50 dark:border-zinc-800/50 last:border-0";
+                tr.innerHTML = `
+                    <td class="p-4 pl-6 whitespace-nowrap font-bold text-zinc-800 dark:text-zinc-200">${safeText(t.date)}</td>
+                    <td class="p-4 whitespace-nowrap"><span class="bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-widest text-zinc-600 dark:text-zinc-300">${safeText(t.category)}</span></td>
+                    <td class="p-4 text-right whitespace-nowrap font-bold text-emerald-600 dark:text-emerald-400">${t.income > 0 ? formatLKR(t.income) : '-'}</td>
+                    <td class="p-4 text-right whitespace-nowrap font-bold text-rose-600 dark:text-rose-400">${t.expense > 0 ? formatLKR(t.expense) : '-'}</td>
+                    <td class="p-4 text-right whitespace-nowrap font-bold text-accent">${t.investment > 0 ? formatLKR(t.investment) : '-'}</td>
+                    <td class="p-4 text-right whitespace-nowrap font-extrabold text-zinc-900 dark:text-white">${formatLKR(t.balance)}</td>
+                    <td class="p-4 pr-6 text-center whitespace-nowrap">
+                        <button onclick="editTransaction(${t.id})" class="text-zinc-400 hover:text-primary bg-white dark:bg-zinc-800 shadow-sm border border-zinc-200 dark:border-zinc-700 w-8 h-8 rounded-lg mr-1 transition-all"><i class="fa-solid fa-pen text-xs"></i></button>
+                        <button onclick="deleteTransaction(${t.id})" class="text-zinc-400 hover:text-rose-500 bg-white dark:bg-zinc-800 shadow-sm border border-zinc-200 dark:border-zinc-700 w-8 h-8 rounded-lg transition-all"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('empty-state').classList.toggle('hidden', data.length > 0);
+            const pControl = document.getElementById('pagination-controls');
+            pControl.classList.toggle('hidden', data.length <= AppState.itemsPerPage);
+            document.getElementById('page-info').innerText = `Page ${AppState.currentPage} of ${totalPages}`;
+            document.getElementById('btn-prev').disabled = AppState.currentPage === 1;
+            document.getElementById('btn-next').disabled = AppState.currentPage === totalPages;
+
+            document.getElementById('dash-income').innerText = formatLKR(totals.inc);
+            document.getElementById('dash-expense').innerText = formatLKR(totals.exp);
+            document.getElementById('dash-invest').innerText = formatLKR(totals.inv);
+            document.getElementById('dash-balance').innerText = formatLKR(totals.bal);
+
+            const periodLabel = AppState.currentFilter === 'monthly' ? filterDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : filterDate.getFullYear();
+            document.getElementById('current-period-label').innerText = periodLabel;
+
+            updateCharts(totals, data);
+        }
+
+        function exportPDF() {
+            const doc = new jsPDF();
+            const pickerVal = document.getElementById('report-date-picker').value;
+            const filterDate = pickerVal ? new Date(pickerVal + "-01") : new Date();
+            const catFilter = document.getElementById('report-cat-filter').value;
+            const data = AppState.transactions.filter(t => {
+                const tDate = new Date(t.date);
+                const dateMatch = AppState.currentFilter === 'monthly' ? (tDate.getMonth() === filterDate.getMonth() && tDate.getFullYear() === filterDate.getFullYear()) : (tDate.getFullYear() === filterDate.getFullYear());
+                return dateMatch && (catFilter === 'all' || t.category === catFilter);
+            }).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            doc.setFontSize(18);
+            doc.text("FinTrack Pro - Financial Report", 14, 22);
+            doc.setFontSize(11);
+            doc.setTextColor(100);
+            const periodStr = AppState.currentFilter === 'monthly' ? filterDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : filterDate.getFullYear();
+            doc.text(`Period: ${periodStr}`, 14, 30);
+            if (catFilter !== 'all') doc.text(`Category: ${catFilter}`, 14, 36);
+
+            const tableRows = data.map(t => [t.date, t.category, t.income > 0 ? t.income.toFixed(2) : '-', t.expense > 0 ? t.expense.toFixed(2) : '-', t.investment > 0 ? t.investment.toFixed(2) : '-', (t.income - t.expense - t.investment).toFixed(2)]);
+            
+            doc.autoTable({
+                startY: catFilter !== 'all' ? 42 : 36,
+                head: [['Date', 'Category', 'Income', 'Expense', 'Invest', 'Balance']],
+                body: tableRows,
+                theme: 'grid',
+                headStyles: { fillColor: [99, 102, 241] },
+                styles: { fontSize: 9 },
+            });
+
+            const totals = data.reduce((acc, t) => ({ i: acc.i + t.income, e: acc.e + t.expense, inv: acc.inv + t.investment }), { i: 0, e: 0, inv: 0 });
+            const finalY = doc.lastAutoTable.finalY + 10;
+            doc.setFontSize(10);
+            doc.setTextColor(0);
+            doc.text(`Total Income: LKR ${totals.i.toLocaleString()}`, 14, finalY);
+            doc.text(`Total Expense: LKR ${totals.e.toLocaleString()}`, 14, finalY + 6);
+            doc.text(`Net Balance: LKR ${(totals.i - totals.e - totals.inv).toLocaleString()}`, 14, finalY + 12);
+
+            doc.save(`FinTrack_Report_${periodStr}.pdf`);
+            showToast("PDF Downloaded!");
+        }
+
+        // --- JSON Backup/Restore ---
+        function exportData() {
+            const dataStr = JSON.stringify({ transactions: AppState.transactions, categories: AppState.categories, exportedAt: new Date().toISOString() }, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `fintrack_backup_${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            showToast("Backup Saved!");
+        }
+
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
+            if (file.size > 5 * 1024 * 1024) { alert('Backup files must be smaller than 5 MB.'); input.value = ''; return; }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const data = (function(){ try { return JSON.parse(e.target.result); } catch(e) { return null; } })();
+                    normalizeAppData(data && data.transactions, data && data.categories);
+                    saveData(); renderCategories(); refreshReports(); updateBudgetTracker();
+                    showToast("Data Restored Successfully!");
+                } catch (err) { alert("Invalid file format"); }
+            };
+            reader.readAsText(file);
+        }
+
+        // --- Charts & Categories ---
+        let chartTrend, chartCat;
+
+        function updateCharts(t, data) {
+            Chart.defaults.font.family = '"Plus Jakarta Sans", sans-serif';
+            const isDark = document.documentElement.classList.contains('dark');
+            const txt = isDark ? '#a1a1aa' : '#71717a';
+            const gridCol = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+
+            if (chartTrend) chartTrend.destroy();
+            chartTrend = new Chart(document.getElementById('trendChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Income', 'Expense', 'Invest', 'Net'],
+                    datasets: [{
+                        data: [t.inc, t.exp, t.inv, t.bal],
+                        backgroundColor: ['#10B981', '#f43f5e', '#8b5cf6', isDark ? '#e4e4e7' : '#18181b'],
+                        borderRadius: 8,
+                        barPercentage: 0.5
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: false },
+                    scales: {
+                        y: { border: {display: false}, grid: { color: gridCol }, ticks: { color: txt, font: {weight: 600} } },
+                        x: { border: {display: false}, grid: { display: false }, ticks: { color: txt, font: {weight: 600} } }
+                    }
+                }
+            });
+
+            const cats = {};
+            data.forEach(x => { if (x.expense > 0) cats[x.category] = (cats[x.category] || 0) + x.expense; });
+
+            if (chartCat) chartCat.destroy();
+            chartCat = new Chart(document.getElementById('catChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(cats).length ? Object.keys(cats) : ['Empty'],
+                    datasets: [{
+                        data: Object.values(cats).length ? Object.values(cats) : [1],
+                        backgroundColor: Object.keys(cats).length ? ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981'] : [isDark?'#27272a':'#e4e4e7'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '75%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: txt, usePointStyle: true, padding: 20, font: {weight: 600} } }
+                    }
+                }
+            });
+        }
+
+        function renderCategories() {
+            const expSel = document.getElementById('exp-category');
+            const filter = document.getElementById('report-cat-filter');
+            const list = document.getElementById('category-management-list');
+            
+            expSel.innerHTML = '';
+            filter.innerHTML = '<option value="all">All Categories</option><option value="Income">Income (General)</option>';
+            list.innerHTML = '';
+
+            AppState.categories.forEach(c => {
+                expSel.add(new Option(c.name, c.name));
+                filter.add(new Option(c.name, c.name));
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors border-b border-zinc-50 dark:border-zinc-800/50 last:border-0";
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-zinc-800 dark:text-zinc-200">${safeText(c.name)}</td>
+                    <td class="p-4 text-right">
+                        <div class="relative inline-block">
+                            <span class="absolute left-2 top-2 text-zinc-400 text-xs">LKR</span>
+                            <input type="number" value="${c.limit}" data-category-limit class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg pl-8 pr-3 py-1.5 text-sm w-32 font-bold text-right outline-none focus:border-primary focus:ring-1 focus:ring-primary dark:text-white transition-all shadow-sm">
+                        </div>
+                    </td>
+                    <td class="p-4 text-center">
+                         <button data-category-delete class="text-zinc-400 hover:text-rose-500 bg-white dark:bg-zinc-800 shadow-sm border border-zinc-200 dark:border-zinc-700 w-8 h-8 rounded-lg transition-all"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </td>
+                `;
+                tr.querySelector('[data-category-limit]').addEventListener('change', (event) => updateCategoryLimit(c.name, event.target.value));
+                tr.querySelector('[data-category-delete]').addEventListener('click', () => removeCategory(c.name));
+                list.appendChild(tr);
+            });
+        }
+
+        function addNewCategory() {
+            const name = cleanText(document.getElementById('cat-name-new').value, 80);
+            const limit = parseFloat(document.getElementById('cat-limit-new').value) || 0;
+            if (name && !AppState.categories.some(c => c.name === name)) {
+                AppState.categories.push({ name: name, limit: limit });
+                saveData(); renderCategories(); updateBudgetTracker();
+                document.getElementById('cat-name-new').value = '';
+                document.getElementById('cat-limit-new').value = '';
+                showToast("Category Created");
+            } else { showToast("Invalid or Duplicate Category"); }
+        }
+
+        function updateCategoryLimit(name, newLimit) {
+            const cat = AppState.categories.find(c => c.name === name);
+            if (cat) {
+                cat.limit = boundedNumber(newLimit);
+                saveData(); updateBudgetTracker(); showToast("Limit Updated");
+            }
+        }
+
+        function removeCategory(name) {
+            if (confirm('Delete category "' + name + '"?')) {
+                AppState.categories = AppState.categories.filter(c => c.name !== name);
+                saveData(); renderCategories(); updateBudgetTracker(); showToast("Category Deleted");
+            }
+        }
+
+        // --- Utils ---
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            t.classList.remove('translate-x-[150%]');
+            setTimeout(() => t.classList.add('translate-x-[150%]'), 3000);
+        }
+
+        function clearAllData() {
+            if (confirm("CRITICAL WARNING: This will factory reset the application and delete ALL data permanently. Proceed?")) {
+                localStorage.removeItem('ft_transactions'); localStorage.removeItem('ft_categories'); location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>

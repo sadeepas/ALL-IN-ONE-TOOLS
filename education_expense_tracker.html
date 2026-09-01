@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self'; worker-src 'self' blob:;">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <script src="security.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTrack | Modern Class Fee Manager</title>
+    
+    <!-- Web Icon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%234f46e5' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.3 0-200-89.7-200-200S145.7 56 256 56s200 89.7 200 200-89.7 200-200 200zm-32-316v176h112v-32H256V140h-32z'/></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind Config -->
+    <script>
+
+        // ── Security: XSS-safe HTML escape ───────────────────────
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { 
+                        primary: '#4f46e5', 
+                        primaryHover: '#4338ca',
+                        surface: '#ffffff',
+                        surfaceDark: '#1f2937',
+                        bgLight: '#f3f4f6',
+                        bgDark: '#111827'
+                    },
+                    animation: { 
+                        'fade-in': 'fadeIn 0.3s ease-out', 
+                        'slide-up': 'slideUp 0.3s ease-out' 
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS for Scrollbars & Utilities -->
+    <style>
+        body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+        
+        /* Input overrides to remove default browser styles */
+        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; transition: 0.2s; }
+        .dark input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+        
+        .toast-enter { transform: translateX(100%); opacity: 0; }
+        .toast-enter-active { transform: translateX(0); opacity: 1; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .toast-leave-active { transform: translateX(100%); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* Glassmorphism Utilities */
+        .glass-surface {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+        }
+        .dark .glass-surface {
+            background: rgba(17, 24, 39, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+        }
+        .dark .glass-panel {
+            background: rgba(31, 41, 55, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .glass-hover:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+        .dark .glass-hover:hover {
+            background: rgba(55, 65, 81, 0.6);
+        }
+        
+        /* Blob Animations */
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob { animation: blob 7s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+    </style>
+
+  <!-- XSS Protection: Safe escaping utility -->
+  <script>
+    // Global safe text utility - use this instead of innerHTML for user data
+    window.safeText = function(str) {
+      const d = document.createElement('div');
+      d.textContent = String(str || '');
+      return d.innerHTML;
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-gray-800 dark:text-gray-100 font-sans h-screen flex overflow-hidden transition-colors duration-200 relative z-0">
+
+    <!-- Animated Background Blobs -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-[-1]">
+        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 rounded-full bg-indigo-400/40 dark:bg-indigo-600/30 mix-blend-multiply dark:mix-blend-screen filter blur-[100px] animate-blob"></div>
+        <div class="absolute top-[-10%] right-[-10%] w-96 h-96 rounded-full bg-purple-400/40 dark:bg-purple-600/30 mix-blend-multiply dark:mix-blend-screen filter blur-[100px] animate-blob animation-delay-2000"></div>
+        <div class="absolute bottom-[-20%] left-[20%] w-96 h-96 rounded-full bg-pink-400/40 dark:bg-pink-600/30 mix-blend-multiply dark:mix-blend-screen filter blur-[100px] animate-blob animation-delay-4000"></div>
+    </div>
+
+    <!-- Global Loader -->
+    <div id="loader" class="fixed inset-0 bg-primary flex flex-col items-center justify-center text-white z-[10000] transition-opacity duration-500">
+        <i class="fas fa-layer-group text-5xl mb-4 animate-pulse"></i>
+        <h1 class="text-3xl font-bold tracking-tight">EduTrack</h1>
+        <p class="mt-2 text-indigo-200 text-sm">Initializing workspace...</p>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 w-80 max-w-[calc(100vw-2rem)]"></div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[40] hidden transition-opacity duration-300 opacity-0 lg:hidden" onclick="toggleMobileMenu()"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-[50] w-64 glass-surface border-r border-gray-200 dark:border-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col shadow-xl lg:shadow-none lg:relative">
+        
+        <!-- Logo Area -->
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-800 shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-lg"></i>
+                </div>
+                <span class="text-xl font-bold text-gray-900 dark:text-white tracking-tight">EduTrack</span>
+            </div>
+            <button class="lg:hidden ml-auto text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" onclick="toggleMobileMenu()">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors glass-panel shadow-sm text-primary dark:text-indigo-300">
+                <i class="fas fa-chart-pie w-5 text-center"></i> Dashboard
+            </button>
+            <button onclick="switchTab('classes')" id="nav-classes" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-600 dark:text-gray-400 hover:bg-white/40 dark:hover:bg-gray-800/40 hover:text-gray-900 dark:hover:text-gray-200">
+                <i class="fas fa-book-open w-5 text-center"></i> Classes
+            </button>
+            <button onclick="switchTab('calendar')" id="nav-calendar" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-600 dark:text-gray-400 hover:bg-white/40 dark:hover:bg-gray-800/40 hover:text-gray-900 dark:hover:text-gray-200">
+                <i class="fas fa-calendar-day w-5 text-center"></i> Calendar
+            </button>
+            <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-600 dark:text-gray-400 hover:bg-white/40 dark:hover:bg-gray-800/40 hover:text-gray-900 dark:hover:text-gray-200">
+                <i class="fas fa-chart-line w-5 text-center"></i> Analytics
+            </button>
+            <div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">
+                <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-600 dark:text-gray-400 hover:bg-white/40 dark:hover:bg-gray-800/40 hover:text-gray-900 dark:hover:text-gray-200">
+                    <i class="fas fa-database w-5 text-center"></i> Data & Export
+                </button>
+            </div>
+        </nav>
+
+        <!-- User/Theme Footer -->
+        <div class="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
+            <button onclick="toggleTheme()" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium">
+                <i id="theme-icon" class="fas fa-moon text-gray-500 dark:text-yellow-400"></i>
+                <span id="theme-text">Dark Mode</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        
+        <!-- Mobile Header -->
+        <header class="h-16 glass-surface border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 lg:hidden shrink-0 z-30">
+            <div class="flex items-center gap-2 text-primary dark:text-indigo-400 font-bold text-lg">
+                <i class="fas fa-graduation-cap"></i> EduTrack
+            </div>
+            <button onclick="toggleMobileMenu()" class="p-2 -mr-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </header>
+
+        <!-- Scrollable Viewport -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 w-full">
+            
+            <!-- View: DASHBOARD -->
+            <section id="dashboard" class="tab-content animate-fade-in block space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Overview</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Track and manage your educational expenses.</p>
+                    </div>
+                    <div class="text-sm font-medium text-gray-600 dark:text-gray-300 glass-panel px-4 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex items-center gap-2">
+                        <i class="far fa-clock text-primary"></i> <span id="current-time"></span>
+                    </div>
+                </div>
+                
+                <!-- Stat Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="glass-panel p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Spent This Month</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white" id="stat-month-spend">LKR 0.00</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-primary flex items-center justify-center text-xl">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Spent This Year</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white" id="stat-year-spend">LKR 0.00</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center text-xl">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Active Classes</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white" id="stat-active-classes">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-500 flex items-center justify-center text-xl">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Add Payment Form -->
+                    <div class="glass-panel p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-1 h-fit">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <i class="fas fa-plus-circle text-primary"></i> Add Payment
+                        </h3>
+                        <form id="form-payment" onsubmit="handlePaymentSubmit(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Class</label>
+                                <select id="pay-class" required class="w-full rounded-lg bg-white/40 dark:bg-gray-900/40 backdrop-blur-md border border-white/50 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow text-sm">
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount (LKR)</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">Rs.</span>
+                                    </div>
+                                    <input type="number" id="pay-amount" required min="0" step="0.01" class="w-full rounded-lg bg-white/40 dark:bg-gray-900/40 backdrop-blur-md border border-white/50 dark:border-gray-700 pl-10 pr-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow text-sm">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
+                                <input type="date" id="pay-date" required class="w-full rounded-lg bg-white/40 dark:bg-gray-900/40 backdrop-blur-md border border-white/50 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow text-sm">
+                            </div>
+                            <button type="submit" id="btn-save-payment" class="w-full bg-primary hover:bg-primaryHover text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex justify-center items-center gap-2">
+                                Save Transaction
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Recent Payments Table -->
+                    <div class="glass-panel p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2 flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                <i class="fas fa-history text-primary"></i> Recent Transactions
+                            </h3>
+                            <button onclick="switchTab('analytics')" class="text-sm font-medium text-primary hover:text-primaryHover">View All &rarr;</button>
+                        </div>
+                        <div class="overflow-x-auto flex-1">
+                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                <thead>
+                                    <tr class="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 font-medium">
+                                        <th class="pb-3 pr-4 font-medium">Date</th>
+                                        <th class="pb-3 px-4 font-medium">Class Name</th>
+                                        <th class="pb-3 px-4 font-medium">Amount</th>
+                                        <th class="pb-3 pl-4 font-medium text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-payments-table" class="divide-y divide-gray-100 dark:divide-gray-800 text-gray-700 dark:text-gray-200">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View: CLASSES -->
+            <section id="classes" class="tab-content animate-fade-in hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Manage Classes</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Setup your subjects, fees, and automation rules.</p>
+                    </div>
+                    <button onclick="openClassModal()" class="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-lg shadow-sm transition-colors font-medium flex items-center gap-2 text-sm">
+                        <i class="fas fa-plus"></i> New Class
+                    </button>
+                </div>
+                
+                <div id="classes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- View: CALENDAR -->
+            <section id="calendar" class="tab-content animate-fade-in hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Payment Calendar</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Visual timeline of your expenditures.</p>
+                    </div>
+                    <div class="flex items-center glass-panel rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-1">
+                        <button onclick="changeCalendarMonth(-1)" class="p-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"><i class="fas fa-chevron-left"></i></button>
+                        <h3 id="calendar-month-year" class="font-bold text-gray-900 dark:text-white min-w-[140px] text-center text-sm"></h3>
+                        <button onclick="changeCalendarMonth(1)" class="p-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6 overflow-hidden flex flex-col">
+                    <div class="grid grid-cols-7 gap-1 mb-2">
+                        <div class="text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider py-1">Sun</div>
+                        <div class="text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider py-1">Mon</div>
+                        <div class="text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider py-1">Tue</div>
+                        <div class="text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider py-1">Wed</div>
+                        <div class="text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider py-1">Thu</div>
+                        <div class="text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider py-1">Fri</div>
+                        <div class="text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider py-1">Sat</div>
+                    </div>
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-1 flex-1 auto-rows-[minmax(80px,1fr)]">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- View: ANALYTICS -->
+            <section id="analytics" class="tab-content animate-fade-in hidden space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Reports & Analytics</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Deep dive into your spending habits.</p>
+                </div>
+                
+                <!-- Filters -->
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 relative z-20">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">From Date</label>
+                            <input type="date" id="filter-start" class="w-full rounded-lg bg-white/40 dark:bg-gray-900/40 backdrop-blur-md border border-white/50 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-white outline-none focus:ring-1 focus:ring-primary text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">To Date</label>
+                            <input type="date" id="filter-end" class="w-full rounded-lg bg-white/40 dark:bg-gray-900/40 backdrop-blur-md border border-white/50 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-white outline-none focus:ring-1 focus:ring-primary text-sm">
+                        </div>
+                        <div class="relative w-full" id="multi-select-container">
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Filter by Class</label>
+                            <div onclick="toggleMultiSelect()" class="w-full rounded-lg bg-white/40 dark:bg-gray-900/40 backdrop-blur-md border border-white/50 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-white outline-none cursor-pointer flex justify-between items-center text-sm h-[38px]">
+                                <span id="multi-select-text" class="truncate font-medium">All Classes</span>
+                                <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+                            </div>
+                            <div id="multi-select-dropdown" class="absolute z-50 w-full mt-1 glass-panel border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl hidden">
+                                <ul class="max-h-48 overflow-y-auto py-1 text-sm text-gray-700 dark:text-gray-200" id="filter-class-list">
+                                    <!-- Populated by JS -->
+                                </ul>
+                            </div>
+                        </div>
+                        <div>
+                            <button onclick="generateAnalytics()" class="w-full bg-gray-900 hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm flex justify-center items-center gap-2 h-[38px]">
+                                <i class="fas fa-filter"></i> Apply Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Area -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="glass-panel p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 tracking-wide uppercase">Spending Trend</h3>
+                        <div class="relative h-64 w-full">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 tracking-wide uppercase">Class Breakdown</h3>
+                        <div class="relative h-64 w-full flex justify-center">
+                            <canvas id="breakdownChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Ledger -->
+                <div class="glass-panel rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
+                    <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
+                        <h3 class="font-bold text-gray-900 dark:text-white">Transaction Ledger</h3>
+                        <span class="font-bold text-primary px-3 py-1 bg-primary/10 rounded-md text-sm" id="report-total">Total: LKR 0.00</span>
+                    </div>
+                    <div class="overflow-x-auto max-h-[400px]">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="glass-panel sticky top-0 border-b border-gray-200 dark:border-gray-700 shadow-sm z-10">
+                                <tr>
+                                    <th class="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Date</th>
+                                    <th class="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Class</th>
+                                    <th class="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Type</th>
+                                    <th class="px-4 py-3 font-medium text-gray-500 dark:text-gray-400 text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analytics-table" class="divide-y divide-gray-100 dark:divide-gray-800 text-gray-700 dark:text-gray-300">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View: SETTINGS -->
+            <section id="settings" class="tab-content animate-fade-in hidden space-y-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Data Management</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Export reports, backup your database, or reset application state.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- PDF Export -->
+                    <div class="glass-panel p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col items-center text-center">
+                        <div class="w-14 h-14 rounded-full bg-indigo-50 text-primary dark:bg-indigo-900/30 flex items-center justify-center text-2xl mb-4">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-900 dark:text-white mb-1">Generate PDF</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-6 flex-1">Download a printable report of all recorded transactions.</p>
+                        <button onclick="exportPDF()" class="w-full bg-primary hover:bg-primaryHover text-white py-2 rounded-lg text-sm font-medium transition-colors">Export Report</button>
+                    </div>
+
+                    <!-- JSON Backup -->
+                    <div class="glass-panel p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col items-center text-center">
+                        <div class="w-14 h-14 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-900/30 flex items-center justify-center text-2xl mb-4">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-900 dark:text-white mb-1">Backup Data</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-6 flex-1">Save your database locally as a JSON file to prevent loss.</p>
+                        <button onclick="backupData()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white py-2 rounded-lg text-sm font-medium transition-colors border border-gray-200 dark:border-transparent">Download JSON</button>
+                    </div>
+
+                    <!-- JSON Restore -->
+                    <div class="glass-panel p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col items-center text-center">
+                        <div class="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 flex items-center justify-center text-2xl mb-4">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-900 dark:text-white mb-1">Restore Data</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-6 flex-1">Upload a previously downloaded JSON backup file.</p>
+                        <input type="file" id="file-restore" accept=".json" class="hidden" onchange="restoreData(event)">
+                        <button onclick="document.getElementById('file-restore').click()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white py-2 rounded-lg text-sm font-medium transition-colors border border-gray-200 dark:border-transparent">Upload File</button>
+                    </div>
+
+                    <!-- Reset -->
+                    <div class="glass-panel p-6 rounded-xl shadow-sm border border-red-100 dark:border-red-900/30 flex flex-col items-center text-center">
+                        <div class="w-14 h-14 rounded-full bg-red-50 text-red-600 dark:bg-red-900/30 flex items-center justify-center text-2xl mb-4">
+                            <i class="fas fa-trash-alt"></i>
+                        </div>
+                        <h3 class="font-bold text-red-600 dark:text-red-400 mb-1">Factory Reset</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-6 flex-1">Permanently wipe all classes and records. Cannot be undone.</p>
+                        <button onclick="resetData()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-500/10 dark:hover:bg-red-500/20 dark:text-red-400 py-2 rounded-lg text-sm font-medium transition-colors border border-red-200 dark:border-red-900/50">Wipe Data</button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Modals Background Backdrop -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[60] hidden transition-opacity duration-300 opacity-0"></div>
+
+    <!-- Modal: Add/Edit Class -->
+    <div id="class-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4 pt-10 sm:pt-4">
+        <div class="glass-panel w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 opacity-0 transition-all duration-300" id="class-modal-content">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                <h2 id="modal-title" class="text-lg font-bold text-gray-900 dark:text-white">Class Details</h2>
+                <button onclick="closeModal('class-modal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <form id="form-class" onsubmit="saveClass(event)" class="p-6 overflow-y-auto max-h-[70vh]">
+                <input type="hidden" id="class-id">
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subject / Class Name</label>
+                        <input type="text" id="class-name" required placeholder="e.g. A/L Physics" class="w-full rounded-lg bg-white/40 dark:bg-gray-900/40 backdrop-blur-md border border-white/50 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow text-sm">
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monthly Fee (Rs.)</label>
+                            <input type="number" id="class-fee" required min="0" step="0.01" class="w-full rounded-lg bg-white/40 dark:bg-gray-900/40 backdrop-blur-md border border-white/50 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow text-sm">
+                        </div>
+                        <div class="w-24">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Color</label>
+                            <input type="color" id="class-color" required value="#4f46e5" class="w-full h-[38px] rounded-lg cursor-pointer border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 p-1">
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mt-2">
+                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                            <input type="checkbox" id="class-auto" onchange="toggleAutoOptions()" class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary glass-panel">
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Enable Auto-Billing</span>
+                        </label>
+                        
+                        <div id="auto-options" class="hidden mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-3">
+                            <p class="text-xs text-gray-500 dark:text-gray-400">System automatically logs this fee every month.</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Billing Day (1-28)</label>
+                                    <input type="number" id="class-auto-date" min="1" max="28" value="1" class="w-full rounded-md glass-panel border border-gray-300 dark:border-gray-600 px-2 py-1.5 text-gray-900 dark:text-white text-sm outline-none focus:border-primary">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                                    <input type="date" id="class-start-date" class="w-full rounded-md glass-panel border border-gray-300 dark:border-gray-600 px-2 py-1.5 text-gray-900 dark:text-white text-sm outline-none focus:border-primary">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex gap-3">
+                    <button type="button" onclick="closeModal('class-modal')" class="flex-1 glass-panel text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Cancel</button>
+                    <button type="submit" class="flex-1 bg-primary hover:bg-primaryHover text-white py-2 rounded-lg text-sm font-medium shadow-sm transition-colors">Save Details</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Payment -->
+    <div id="payment-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-sm rounded-2xl shadow-2xl flex flex-col transform scale-95 opacity-0 transition-all duration-300" id="payment-modal-content">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Edit Record</h2>
+                <button onclick="closeModal('payment-modal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <form id="form-edit-payment" onsubmit="saveEditPayment(event)" class="p-6 space-y-4">
+                <input type="hidden" id="edit-pay-id">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Class</label>
+                    <select id="edit-pay-class" required class="w-full rounded-lg bg-white/40 dark:bg-gray-900/40 backdrop-blur-md border border-white/50 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary text-sm"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount</label>
+                    <input type="number" id="edit-pay-amount" required min="0" step="0.01" class="w-full rounded-lg bg-white/40 dark:bg-gray-900/40 backdrop-blur-md border border-white/50 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
+                    <input type="date" id="edit-pay-date" required class="w-full rounded-lg bg-white/40 dark:bg-gray-900/40 backdrop-blur-md border border-white/50 dark:border-gray-700 px-3 py-2 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-primary text-sm">
+                </div>
+                
+                <div class="mt-6 flex gap-3">
+                    <button type="button" onclick="closeModal('payment-modal')" class="flex-1 glass-panel text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Cancel</button>
+                    <button type="submit" class="flex-1 bg-primary hover:bg-primaryHover text-white py-2 rounded-lg text-sm font-medium shadow-sm transition-colors">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Day Details (Calendar) -->
+    <div id="day-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-sm rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 opacity-0 transition-all duration-300 max-h-[80vh]" id="day-modal-content">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
+                <h2 id="day-modal-title" class="text-sm font-bold text-gray-900 dark:text-white"></h2>
+                <button onclick="closeModal('day-modal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div id="day-modal-list" class="p-4 overflow-y-auto space-y-2 flex-1">
+                <!-- Populated by JS -->
+            </div>
+            
+            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex justify-between items-center">
+                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total for day</span>
+                <span id="day-modal-total" class="font-bold text-lg text-gray-900 dark:text-white"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * EDUTRACK APP LOGIC
+         * Modernized, structured, and cleaned up.
+         */
+
+        // --- STATE & CONSTANTS ---
+        const APP_VERSION = "2.0.0";
+        let state = {
+            classes: [],
+            payments: [],
+            lastAutoRun: null
+        };
+        let currentCalMonth = new Date().getMonth();
+        let currentCalYear = new Date().getFullYear();
+        let charts = { trend: null, breakdown: null };
+        let selectedClassesFilter = ['all'];
+
+        // --- UTILS ---
+        const generateId = () => Math.random().toString(36).substring(2, 11);
+        const formatLKR = (amt) => new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR' }).format(amt);
+        const getTodayStr = () => new Date().toISOString().split('T')[0];
+        const cleanText = (value, max = 100) => String(value ?? '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, max);
+        const isDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''));
+        const safeAmount = (value) => {
+            const amount = Number(value);
+            return Number.isFinite(amount) ? Math.max(0, Math.min(amount, 1_000_000_000)) : 0;
+        };
+        function normalizeState(raw) {
+            const input = raw && typeof raw === 'object' ? raw : {};
+            const validId = (value) => /^[A-Za-z0-9_-]{4,32}$/.test(String(value || '')) ? String(value) : generateId();
+            const classes = Array.isArray(input.classes) ? input.classes.slice(0, 200).map(item => ({
+                id: validId(item && item.id), name: cleanText(item && item.name, 100) || 'Untitled class', fee: safeAmount(item && item.fee),
+                color: /^#[0-9a-f]{6}$/i.test(String(item && item.color || '')) ? item.color : '#4f46e5', auto: Boolean(item && item.auto),
+                autoDate: Math.max(1, Math.min(28, Number(item && item.autoDate) || 1)), startDate: isDate(item && item.startDate) ? item.startDate : getTodayStr(), timestamp: String(item && item.timestamp || '')
+            })) : [];
+            const classIds = new Set(classes.map(item => item.id));
+            const payments = Array.isArray(input.payments) ? input.payments.slice(0, 5_000).map(item => ({
+                id: validId(item && item.id), classId: classIds.has(String(item && item.classId)) ? String(item.classId) : '', amount: safeAmount(item && item.amount),
+                date: isDate(item && item.date) ? item.date : getTodayStr(), timestamp: String(item && item.timestamp || ''), type: item && item.type === 'Auto' ? 'Auto' : 'Manual'
+            })).filter(item => item.classId) : [];
+            return { classes, payments, lastAutoRun: isDate(input.lastAutoRun) ? input.lastAutoRun : getTodayStr() };
+        }
+
+        // --- INITIALIZATION ---
+        window.onload = () => {
+            initTheme();
+            loadData();
+            runAutomations();
+            
+            // Set Default Dates
+            const today = new Date();
+            document.getElementById('pay-date').valueAsDate = today;
+            document.getElementById('class-start-date').valueAsDate = today;
+            document.getElementById('filter-start').valueAsDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            document.getElementById('filter-end').valueAsDate = today;
+
+            // Render Views
+            populateClassDropdowns();
+            updateDashboard();
+            renderClassesList();
+            renderCalendar();
+
+            // Clock
+            setInterval(() => {
+                document.getElementById('current-time').innerText = new Date().toLocaleString('en-LK', { timeZone: 'Asia/Colombo', dateStyle: 'medium', timeStyle: 'short' });
+            }, 1000);
+
+            // Hide Loader
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                loader.classList.add('opacity-0');
+                setTimeout(() => loader.remove(), 500);
+                showToast("Workspace ready", "success");
+            }, 600);
+        };
+
+        // --- DATA PERSISTENCE ---
+        function loadData() {
+            const stored = localStorage.getItem('eduTrackData_v2');
+            if (stored) {
+                try { state = normalizeState(JSON.parse(stored)); } catch { state = normalizeState(null); }
+            } else {
+                // Try migrating from old version
+                const oldStored = localStorage.getItem('eduTrackData');
+                if(oldStored) {
+                    try { state = normalizeState(JSON.parse(oldStored)); } catch { state = normalizeState(null); }
+                    saveData(); // Save under new key
+                }
+            }
+            if(!state.lastAutoRun) state.lastAutoRun = getTodayStr();
+        }
+
+        function saveData() {
+            localStorage.setItem('eduTrackData_v2', JSON.stringify(state));
+        }
+
+        // --- UI CORE ---
+        function showToast(message, type = "success") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const styles = {
+                success: "bg-gray-900 dark:bg-gray-800 text-white border-l-4 border-emerald-500",
+                error: "bg-red-50 text-red-800 border-l-4 border-red-500 dark:bg-red-900/30 dark:text-red-200",
+                info: "bg-blue-50 text-blue-800 border-l-4 border-blue-500 dark:bg-blue-900/30 dark:text-blue-200"
+            };
+            const icons = { success: "fa-check-circle text-emerald-500", error: "fa-exclamation-circle text-red-500", info: "fa-info-circle text-blue-500" };
+
+            toast.className = `flex items-center gap-3 p-4 rounded-lg shadow-lg text-sm font-medium toast-enter ${styles[type]}`;
+            toast.innerHTML = `<i class="fas ${icons[type] || icons.success} text-lg"></i> <span>${safeText(message)}</span>`;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-enter-active');
+            });
+
+            setTimeout(() => {
+                toast.classList.remove('toast-enter-active');
+                toast.classList.add('toast-leave-active');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function switchTab(tabId) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('block');
+            });
+            // Show target
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById(tabId).classList.add('block');
+
+            // Update Nav Buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-600 dark:text-gray-400 hover:bg-white/40 dark:hover:bg-gray-800/40 hover:text-gray-900 dark:hover:text-gray-200";
+            });
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if(activeBtn) {
+                activeBtn.className = "nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors glass-panel shadow-sm text-primary dark:text-indigo-300";
+            }
+
+            // Close mobile menu if open
+            if(window.innerWidth < 1024) toggleMobileMenu(true);
+
+            // Context specific renders
+            if (tabId === 'calendar') renderCalendar();
+            if (tabId === 'analytics') generateAnalytics();
+            if (tabId === 'dashboard') updateDashboard();
+        }
+
+        function toggleMobileMenu(forceClose = false) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+            
+            if (isOpen || forceClose) {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            } else {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                // slight delay to allow display:block to apply before opacity transition
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10); 
+            }
+        }
+
+        function initTheme() {
+            const saved = localStorage.getItem('edutrack-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            if (saved === 'dark') document.documentElement.classList.add('dark');
+            updateThemeUI();
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('edutrack-theme', isDark ? 'dark' : 'light');
+            updateThemeUI();
+            if (!document.getElementById('analytics').classList.contains('hidden')) generateAnalytics();
+        }
+
+        function updateThemeUI() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            
+            if (icon && text) {
+                icon.className = isDark ? 'fas fa-sun text-yellow-400' : 'fas fa-moon text-gray-500';
+                text.innerText = isDark ? 'Light Mode' : 'Dark Mode';
+            }
+
+            Chart.defaults.color = isDark ? '#9ca3af' : '#6b7280';
+            Chart.defaults.scale.grid.color = isDark ? '#374151' : '#f3f4f6';
+            Chart.defaults.font.family = 'Inter, sans-serif';
+        }
+
+        // --- MODAL UTILS ---
+        function openModal(id) {
+            const backdrop = document.getElementById('modal-backdrop');
+            const modal = document.getElementById(id);
+            const content = document.getElementById(`${id}-content`);
+            
+            backdrop.classList.remove('hidden');
+            modal.classList.remove('hidden');
+            
+            // Animate in
+            requestAnimationFrame(() => {
+                backdrop.classList.remove('opacity-0');
+                content.classList.remove('scale-95', 'opacity-0');
+            });
+        }
+
+        function closeModal(id) {
+            const backdrop = document.getElementById('modal-backdrop');
+            const modal = document.getElementById(id);
+            const content = document.getElementById(`${id}-content`);
+            
+            // Animate out
+            backdrop.classList.add('opacity-0');
+            content.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                backdrop.classList.add('hidden');
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // --- AUTOMATION ---
+        function runAutomations() {
+            const today = new Date();
+            let addedCount = 0;
+
+            state.classes.forEach(cls => {
+                if (cls.auto && cls.startDate) {
+                    let currentDate = new Date(cls.startDate);
+                    
+                    while (currentDate <= today) {
+                        let billDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), cls.autoDate);
+                        
+                        // Valid bill date logic
+                        if (billDate >= new Date(cls.startDate) && billDate <= today) {
+                            const billDateStr = billDate.toISOString().split('T')[0];
+                            const exists = state.payments.some(p => p.classId === cls.id && p.date === billDateStr && p.type === 'Auto');
+                            
+                            if (!exists) {
+                                state.payments.push({
+                                    id: generateId(), classId: cls.id, amount: parseFloat(cls.fee),
+                                    date: billDateStr, timestamp: new Date().toISOString(), type: 'Auto'
+                                });
+                                addedCount++;
+                            }
+                        }
+                        currentDate.setMonth(currentDate.getMonth() + 1);
+                    }
+                }
+            });
+
+            if (addedCount > 0) {
+                state.lastAutoRun = getTodayStr();
+                saveData();
+                showToast(`Auto-billed ${addedCount} pending fees.`, "info");
+            }
+        }
+
+        // --- DASHBOARD & PAYMENTS ---
+        function updateDashboard() {
+            const now = new Date();
+            const cm = now.getMonth(), cy = now.getFullYear();
+            let mt = 0, yt = 0;
+
+            state.payments.forEach(p => {
+                const d = new Date(p.date);
+                if (d.getFullYear() === cy) {
+                    yt += p.amount;
+                    if (d.getMonth() === cm) mt += p.amount;
+                }
+            });
+
+            document.getElementById('stat-month-spend').innerText = formatLKR(mt);
+            document.getElementById('stat-year-spend').innerText = formatLKR(yt);
+            document.getElementById('stat-active-classes').innerText = state.classes.length;
+            
+            renderRecentPayments();
+        }
+
+        function populateClassDropdowns() {
+            const select = document.getElementById('pay-class');
+            const filterList = document.getElementById('filter-class-list');
+            const btnSave = document.getElementById('btn-save-payment');
+            
+            if(state.classes.length === 0) {
+                select.innerHTML = '<option value="">No classes available</option>';
+                select.disabled = true;
+                btnSave.disabled = true;
+                btnSave.classList.add('opacity-50', 'cursor-not-allowed');
+                document.getElementById('pay-amount').value = '';
+            } else {
+                select.disabled = false;
+                btnSave.disabled = false;
+                btnSave.classList.remove('opacity-50', 'cursor-not-allowed');
+                
+                select.innerHTML = state.classes.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+                // Set default amount
+                const firstCls = state.classes[0];
+                document.getElementById('pay-amount').value = firstCls.fee;
+            }
+
+            // Analytics Filter Setup
+            let filterHtml = `
+                <li><label class="flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+                    <input type="checkbox" value="all" class="w-4 h-4 text-primary rounded border-gray-300 filter-cb" onchange="handleFilterCb(this)" ${selectedClassesFilter.includes('all') ? 'checked' : ''}>
+                    <span class="ml-2">All Classes</span>
+                </label></li>`;
+                
+            state.classes.forEach(c => {
+                filterHtml += `
+                <li><label class="flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+                    <input type="checkbox" value="${c.id}" class="w-4 h-4 text-primary rounded border-gray-300 filter-cb" onchange="handleFilterCb(this)" ${selectedClassesFilter.includes(c.id) ? 'checked' : ''}>
+                    <span class="ml-2 truncate">${safeText(c.name)}</span>
+                </label></li>`;
+            });
+            filterList.innerHTML = filterHtml;
+            updateFilterText();
+        }
+
+        // Handle auto-updating amount when class changes
+        document.getElementById('pay-class').addEventListener('change', (e) => {
+            const cls = state.classes.find(c => c.id === e.target.value);
+            if(cls) document.getElementById('pay-amount').value = cls.fee;
+        });
+
+        function handlePaymentSubmit(e) {
+            e.preventDefault();
+            const classId = document.getElementById('pay-class').value;
+            if(!classId) return showToast("Create a class first.", "error");
+
+            const amount = parseFloat(document.getElementById('pay-amount').value);
+            const date = document.getElementById('pay-date').value;
+
+            state.payments.push({ id: generateId(), classId, amount, date, timestamp: new Date().toISOString(), type: 'Manual' });
+            saveData();
+            showToast("Payment recorded.");
+            
+            // Reset slightly
+            const cls = state.classes.find(c => c.id === classId);
+            document.getElementById('pay-amount').value = cls ? cls.fee : '';
+            document.getElementById('pay-date').valueAsDate = new Date();
+            
+            updateDashboard();
+        }
+
+        function renderRecentPayments() {
+            const tbody = document.getElementById('recent-payments-table');
+            const recent = [...state.payments].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+            
+            if(recent.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-gray-400 text-sm">No transactions found</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = recent.map(p => {
+                const c = state.classes.find(x => x.id === p.classId);
+                const cName = c ? c.name : 'Unknown';
+                const cColor = c ? c.color : '#cbd5e1';
+                
+                return `
+                <tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <td class="py-3 pr-4 text-gray-600 dark:text-gray-400">
+                        ${safeText(p.date)} <span class="text-[10px] uppercase tracking-wider ml-1 px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700">${safeText(p.type)}</span>
+                    </td>
+                    <td class="py-3 px-4 font-medium flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full" style="background:${cColor}"></span> ${safeText(cName)}
+                    </td>
+                    <td class="py-3 px-4 font-semibold">${formatLKR(p.amount)}</td>
+                    <td class="py-3 pl-4 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onclick="openPaymentEdit('${p.id}')" class="text-blue-500 hover:text-blue-700 p-1"><i class="fas fa-edit"></i></button>
+                        <button onclick="deletePayment('${p.id}')" class="text-red-500 hover:text-red-700 p-1 ml-1"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function deletePayment(id) {
+            if(confirm("Delete this transaction?")) {
+                state.payments = state.payments.filter(p => p.id !== id);
+                saveData();
+                updateDashboard();
+                showToast("Transaction deleted");
+            }
+        }
+
+        // --- PAYMENT EDIT MODAL ---
+        function openPaymentEdit(id) {
+            const p = state.payments.find(x => x.id === id);
+            if(!p) return;
+            
+            const sel = document.getElementById('edit-pay-class');
+            sel.innerHTML = state.classes.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+            
+            document.getElementById('edit-pay-id').value = p.id;
+            document.getElementById('edit-pay-class').value = p.classId;
+            document.getElementById('edit-pay-amount').value = p.amount;
+            document.getElementById('edit-pay-date').value = p.date;
+            
+            openModal('payment-modal');
+        }
+
+        function saveEditPayment(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-pay-id').value;
+            const idx = state.payments.findIndex(p => p.id === id);
+            if(idx > -1) {
+                state.payments[idx].classId = document.getElementById('edit-pay-class').value;
+                state.payments[idx].amount = parseFloat(document.getElementById('edit-pay-amount').value);
+                state.payments[idx].date = document.getElementById('edit-pay-date').value;
+                saveData();
+                updateDashboard();
+                closeModal('payment-modal');
+                showToast("Record updated");
+            }
+        }
+
+        // --- CLASS MANAGEMENT ---
+        function openClassModal(id = null) {
+            document.getElementById('form-class').reset();
+            document.getElementById('auto-options').classList.add('hidden');
+            document.getElementById('class-id').value = '';
+            document.getElementById('modal-title').innerText = id ? "Edit Class" : "New Class";
+
+            if (id) {
+                const c = state.classes.find(x => x.id === id);
+                if (c) {
+                    document.getElementById('class-id').value = c.id;
+                    document.getElementById('class-name').value = c.name;
+                    document.getElementById('class-fee').value = c.fee;
+                    document.getElementById('class-color').value = c.color || '#4f46e5';
+                    document.getElementById('class-auto').checked = c.auto;
+                    if(c.auto) {
+                        document.getElementById('auto-options').classList.remove('hidden');
+                        document.getElementById('class-auto-date').value = c.autoDate || 1;
+                        document.getElementById('class-start-date').value = c.startDate || getTodayStr();
+                    }
+                }
+            } else {
+                document.getElementById('class-start-date').valueAsDate = new Date();
+            }
+            openModal('class-modal');
+        }
+
+        function toggleAutoOptions() {
+            const checked = document.getElementById('class-auto').checked;
+            document.getElementById('auto-options').classList.toggle('hidden', !checked);
+        }
+
+        function saveClass(e) {
+            e.preventDefault();
+            const id = document.getElementById('class-id').value;
+            const data = {
+                id: id || generateId(),
+                name: document.getElementById('class-name').value,
+                fee: parseFloat(document.getElementById('class-fee').value),
+                color: document.getElementById('class-color').value,
+                auto: document.getElementById('class-auto').checked,
+                autoDate: parseInt(document.getElementById('class-auto-date').value) || 1,
+                startDate: document.getElementById('class-start-date').value,
+                timestamp: new Date().toISOString()
+            };
+
+            if (id) {
+                const idx = state.classes.findIndex(c => c.id === id);
+                state.classes[idx] = data;
+                showToast("Class updated");
+            } else {
+                state.classes.push(data);
+                showToast("Class created");
+            }
+
+            saveData();
+            runAutomations();
+            populateClassDropdowns();
+            renderClassesList();
+            updateDashboard(); // Updates drop down in dashboard
+            closeModal('class-modal');
+        }
+
+        function renderClassesList() {
+            const grid = document.getElementById('classes-grid');
+            if(state.classes.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 flex flex-col items-center text-gray-400">
+                    <i class="fas fa-folder-open text-5xl mb-4 opacity-50"></i>
+                    <p>No classes defined yet.</p>
+                </div>`;
+                return;
+            }
+
+            grid.innerHTML = state.classes.map(c => {
+                const total = state.payments.filter(p => p.classId === c.id).reduce((s, p) => s + p.amount, 0);
+                return `
+                <div class="glass-panel rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
+                    <div class="h-2 w-full" style="background:${c.color}"></div>
+                    <div class="p-5 flex-1">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="font-bold text-lg text-gray-900 dark:text-white truncate pr-2">${safeText(c.name)}</h3>
+                            ${c.auto ? '<i class="fas fa-robot text-primary opacity-70" title="Auto-billing enabled"></i>' : ''}
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                <span>Monthly Fee:</span> <span class="font-semibold text-gray-900 dark:text-gray-200">${formatLKR(c.fee)}</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                <span>Total Revenue:</span> <span class="font-semibold text-gray-900 dark:text-gray-200">${formatLKR(total)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-5 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 flex gap-2">
+                        <button onclick="openClassModal('${c.id}')" class="flex-1 text-xs font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white py-1 transition-colors glass-panel border border-gray-200 dark:border-gray-600 rounded">Edit</button>
+                        <button onclick="deleteClass('${c.id}')" class="px-3 text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 py-1 transition-colors border border-transparent rounded"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function deleteClass(id) {
+            if(confirm("Delete this class? Payment history will remain but show as 'Unknown Class'.")) {
+                state.classes = state.classes.filter(c => c.id !== id);
+                saveData();
+                renderClassesList();
+                populateClassDropdowns();
+                updateDashboard();
+                showToast("Class deleted");
+            }
+        }
+
+        // --- CALENDAR ---
+        function changeCalendarMonth(dir) {
+            currentCalMonth += dir;
+            if(currentCalMonth < 0) { currentCalMonth = 11; currentCalYear--; }
+            else if(currentCalMonth > 11) { currentCalMonth = 0; currentCalYear++; }
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            document.getElementById('calendar-month-year').innerText = `${months[currentCalMonth]} ${currentCalYear}`;
+
+            const d = new Date(currentCalYear, currentCalMonth, 1);
+            const firstDay = d.getDay();
+            const daysInMonth = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
+            const today = new Date();
+
+            let html = '';
+            // Empties
+            for(let i=0; i<firstDay; i++) html += `<div class="bg-transparent border-transparent"></div>`;
+
+            for(let i=1; i<=daysInMonth; i++) {
+                const dateStr = `${currentCalYear}-${String(currentCalMonth+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                const pays = state.payments.filter(p => p.date === dateStr);
+                const total = pays.reduce((s, p) => s + p.amount, 0);
+                
+                const isToday = i === today.getDate() && currentCalMonth === today.getMonth() && currentCalYear === today.getFullYear();
+                
+                const wrapperClass = isToday 
+                    ? "bg-primary/5 dark:bg-primary/10 border-primary shadow-sm" 
+                    : "bg-gray-50/50 dark:bg-gray-800/30 border-gray-100 dark:border-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600";
+                
+                const txtClass = isToday ? "text-primary font-bold" : "text-gray-700 dark:text-gray-300";
+                
+                const dots = pays.map(p => {
+                    const c = state.classes.find(x => x.id === p.classId);
+                    return `<span class="w-1.5 h-1.5 rounded-full" style="background:${c?c.color:'#94a3b8'}"></span>`;
+                }).join('');
+
+                html += `
+                <div onclick="openDayModal('${dateStr}')" class="border rounded-lg p-1.5 flex flex-col justify-between cursor-pointer transition-colors ${wrapperClass}">
+                    <span class="text-xs ${txtClass}">${i}</span>
+                    <div class="flex flex-wrap gap-0.5 mt-1">${dots}</div>
+                    <span class="text-[10px] font-semibold text-right mt-1 ${total > 0 ? 'text-gray-900 dark:text-gray-200' : 'text-transparent'}">
+                        ${total > 0 ? formatLKR(total).replace('LKR', '') : '-'}
+                    </span>
+                </div>`;
+            }
+            document.getElementById('calendar-grid').innerHTML = html;
+        }
+
+        function openDayModal(dateStr) {
+            const pays = state.payments.filter(p => p.date === dateStr);
+            if(pays.length === 0) return showToast("No records for this day", "info");
+
+            document.getElementById('day-modal-title').innerText = new Date(dateStr).toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric'});
+            
+            let total = 0;
+            document.getElementById('day-modal-list').innerHTML = pays.map(p => {
+                total += p.amount;
+                const c = state.classes.find(x => x.id === p.classId);
+                return `
+                <div class="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                    <div class="flex items-center gap-3 text-sm">
+                        <span class="w-2.5 h-2.5 rounded-full" style="background:${c?c.color:'#ccc'}"></span>
+                        <div>
+                            <p class="font-bold text-gray-900 dark:text-white">${safeText(c ? c.name : 'Deleted Class')}</p>
+                            <p class="text-xs text-gray-500">${safeText(p.type)}</p>
+                        </div>
+                    </div>
+                    <span class="font-semibold text-gray-900 dark:text-gray-200">${formatLKR(p.amount)}</span>
+                </div>`;
+            }).join('');
+            
+            document.getElementById('day-modal-total').innerText = formatLKR(total);
+            openModal('day-modal');
+        }
+
+        // --- ANALYTICS MULTI-SELECT ---
+        function toggleMultiSelect() { document.getElementById('multi-select-dropdown').classList.toggle('hidden'); }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const container = document.getElementById('multi-select-container');
+            if(container && !container.contains(e.target)) document.getElementById('multi-select-dropdown').classList.add('hidden');
+        });
+
+        function handleFilterCb(cb) {
+            if(cb.value === 'all') {
+                selectedClassesFilter = ['all'];
+                document.querySelectorAll('.filter-cb').forEach(box => box.checked = (box.value === 'all'));
+            } else {
+                if(cb.checked) {
+                    selectedClassesFilter = selectedClassesFilter.filter(v => v !== 'all');
+                    document.querySelector('.filter-cb[value="all"]').checked = false;
+                    selectedClassesFilter.push(cb.value);
+                } else {
+                    selectedClassesFilter = selectedClassesFilter.filter(v => v !== cb.value);
+                    if(selectedClassesFilter.length === 0) {
+                        selectedClassesFilter = ['all'];
+                        document.querySelector('.filter-cb[value="all"]').checked = true;
+                    }
+                }
+            }
+            updateFilterText();
+        }
+
+        function updateFilterText() {
+            const txt = document.getElementById('multi-select-text');
+            if(selectedClassesFilter.includes('all')) txt.innerText = 'All Classes';
+            else if(selectedClassesFilter.length === 1) {
+                const c = state.classes.find(x => x.id === selectedClassesFilter[0]);
+                txt.innerText = c ? c.name : 'Selected';
+            } else txt.innerText = `${selectedClassesFilter.length} Selected`;
+        }
+
+        // --- ANALYTICS REPORTS ---
+        function generateAnalytics() {
+            const sDate = document.getElementById('filter-start').value;
+            const eDate = document.getElementById('filter-end').value;
+            const isAll = selectedClassesFilter.includes('all');
+
+            const filtered = state.payments.filter(p => {
+                if(sDate && p.date < sDate) return false;
+                if(eDate && p.date > eDate) return false;
+                if(!isAll && !selectedClassesFilter.includes(p.classId)) return false;
+                return true;
+            }).sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            const tbody = document.getElementById('analytics-table');
+            let total = 0;
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-gray-500">No data found for these filters.</td></tr>`;
+            } else {
+                tbody.innerHTML = filtered.map(p => {
+                    total += p.amount;
+                    const c = state.classes.find(x => x.id === p.classId);
+                    return `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">${safeText(p.date)}</td>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-200">
+                            <span class="w-2 h-2 inline-block rounded-full mr-2" style="background:${c?c.color:'#ccc'}"></span>${safeText(c ? c.name : 'Unknown')}
+                        </td>
+                        <td class="px-4 py-3 text-xs"><span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-600 dark:text-gray-300 uppercase tracking-wide">${safeText(p.type)}</span></td>
+                        <td class="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100 text-right">${formatLKR(p.amount)}</td>
+                    </tr>`;
+                }).join('');
+            }
+            document.getElementById('report-total').innerText = `Total: ${formatLKR(total)}`;
+            renderCharts(filtered);
+        }
+
+        function renderCharts(data) {
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor = isDark ? '#374151' : '#f3f4f6';
+            const textColor = isDark ? '#9ca3af' : '#6b7280';
+
+            // Process Data
+            const tMap = {}; const cMap = {};
+            data.forEach(p => {
+                // Monthly trend grouping
+                const d = new Date(p.date);
+                const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                tMap[k] = (tMap[k] || 0) + p.amount;
+
+                // Breakdown grouping
+                const c = state.classes.find(x => x.id === p.classId);
+                const name = c ? c.name : 'Unknown';
+                if(!cMap[name]) cMap[name] = { val:0, col: c?c.color:'#ccc' };
+                cMap[name].val += p.amount;
+            });
+
+            // Destroy old
+            if(charts.trend) charts.trend.destroy();
+            if(charts.breakdown) charts.breakdown.destroy();
+
+            // Line Chart
+            charts.trend = new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: Object.keys(tMap).sort(),
+                    datasets:[{
+                        label: 'LKR',
+                        data: Object.keys(tMap).sort().map(k => tMap[k]),
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderWidth: 2, fill: true, tension: 0.4, pointRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: textColor, font: {family: 'Inter'} } },
+                        y: { border: { display: false }, grid: { color: gridColor }, ticks: { color: textColor, font: {family: 'Inter'} }, beginAtZero: true }
+                    }
+                }
+            });
+
+            // Doughnut Chart
+            const bLabels = Object.keys(cMap);
+            charts.breakdown = new Chart(document.getElementById('breakdownChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: bLabels,
+                    datasets:[{
+                        data: bLabels.map(l => cMap[l].val),
+                        backgroundColor: bLabels.map(l => cMap[l].col),
+                        borderWidth: isDark ? 2 : 0,
+                        borderColor: isDark ? '#1f2937' : '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'right', labels: { color: textColor, font: {family: 'Inter', size: 11}, usePointStyle: true, boxWidth: 8 } }
+                    }
+                }
+            });
+        }
+
+        // --- DATA MANAGEMENT ---
+        function resetData() {
+            if(confirm("DANGER: Wiping data will permanently delete everything.")) {
+                if(prompt("Type 'DELETE' to confirm:") === 'DELETE') {
+                    localStorage.removeItem('eduTrackData_v2');
+                    localStorage.removeItem('eduTrackData'); // Old version
+                    location.reload();
+                }
+            }
+        }
+
+        function backupData() {
+            const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+            const a = document.createElement('a');
+            a.href = str;
+            a.download = `EduTrack_Backup_${getTodayStr()}.json`;
+            a.click();
+            showToast("Backup exported successfully");
+        }
+
+        function restoreData(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            if (file.size > 5 * 1024 * 1024) { showToast("Backup files must be smaller than 5 MB", "error"); e.target.value = ''; return; }
+            const r = new FileReader();
+            r.onload = (ev) => {
+                try {
+                    const data = (function(){ try { return JSON.parse(ev.target.result); } catch(e) { return null; } })();
+                    if(data.classes && data.payments) {
+                        state = normalizeState(data);
+                        saveData();
+                        location.reload();
+                    } else showToast("Invalid backup structure", "error");
+                } catch(err) { showToast("Failed to parse file", "error"); }
+            };
+            r.readAsText(file);
+        }
+
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Header
+            doc.setFontSize(18);
+            doc.setTextColor(79, 70, 229);
+            doc.text("EduTrack Financial Report", 14, 20);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 28);
+            
+            // Table Prep
+            const body = state.payments.map(p => {
+                const c = state.classes.find(x => x.id === p.classId);
+                return [p.date, c ? c.name : '-', p.type, formatLKR(p.amount)];
+            });
+            const total = state.payments.reduce((s, p) => s + p.amount, 0);
+
+            doc.autoTable({
+                startY: 35,
+                head: [['Date', 'Class', 'Type', 'Amount']],
+                body: body,
+                theme: 'grid',
+                headStyles: { fillColor: [79, 70, 229], textColor: 255 },
+                foot: [['', '', 'Total:', formatLKR(total)]],
+                footStyles: { fillColor: [243, 244, 246], textColor: [17, 24, 39], fontStyle: 'bold' }
+            });
+
+            doc.save(`EduTrack_Report_${getTodayStr()}.pdf`);
+            showToast("PDF Generated");
+        }
+    </script>
+</body>
+</html>

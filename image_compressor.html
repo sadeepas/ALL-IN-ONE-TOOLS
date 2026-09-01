@@ -1,0 +1,2522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self'; worker-src 'self' blob:;">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <script src="security.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Studio Pro — Compress · Resize · Crop · Convert</title>
+<meta name="description" content="All-in-one browser-based image studio. Compress, resize, crop, convert, and optimize images for WhatsApp, Instagram, Facebook, YouTube and more. 100% private — no server uploads.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%236366f1'/%3E%3Ctext y='.9em' font-size='80'%3E🖼️%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+/* ================================================================
+   RESET & VARIABLES
+================================================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09101e;--bg2:#0f172a;--bg3:#1a2438;--bg4:#243048;
+  --surface:rgba(15,23,42,.85);--surface2:rgba(26,36,56,.7);
+  --border:rgba(148,163,184,.1);--border2:rgba(148,163,184,.06);
+  --text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;
+  --primary:#6366f1;--primary-l:#818cf8;--primary-d:#4f46e5;--primary-glow:rgba(99,102,241,.3);
+  --success:#10b981;--success-l:#34d399;--success-bg:rgba(16,185,129,.12);
+  --danger:#ef4444;--danger-l:#f87171;--danger-bg:rgba(239,68,68,.12);
+  --warning:#f59e0b;--warning-l:#fbbf24;--warning-bg:rgba(245,158,11,.12);
+  --info:#3b82f6;--info-l:#60a5fa;--info-bg:rgba(59,130,246,.12);
+  --sidebar:320px;--hh:64px;
+  --r:10px;--rl:18px;--rxl:26px;
+  --ease:cubic-bezier(.4,0,.2,1);--spring:cubic-bezier(.34,1.56,.64,1);
+}
+html{color-scheme:dark;scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;
+  background-image:radial-gradient(ellipse 900px 600px at 15% -5%,rgba(99,102,241,.13) 0%,transparent 70%),
+    radial-gradient(ellipse 600px 400px at 85% 95%,rgba(16,185,129,.07) 0%,transparent 70%);
+  padding-bottom: 0;
+}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(148,163,184,.18);border-radius:99px}
+
+/* ================================================================
+   SVG ICON SYSTEM UTILITIES
+================================================================ */
+.icon{
+  display:inline-block;width:1.25em;height:1.25em;
+  stroke-width:2;stroke:currentColor;fill:none;
+  stroke-linecap:round;stroke-linejoin:round;
+  vertical-align:middle;position:relative;top:-1px;
+}
+.icon-sm{width:1em;height:1em;stroke-width:2}
+.icon-lg{width:1.8em;height:1.8em;stroke-width:2}
+
+/* ================================================================
+   TOAST NOTIFICATION SYSTEM
+================================================================ */
+#toastStack{
+  position:fixed;top:calc(var(--hh) + 12px);right:16px;z-index:9999;
+  display:flex;flex-direction:column;gap:10px;width:min(370px,calc(100vw - 32px));pointer-events:none}
+.toast{
+  display:flex;align-items:flex-start;gap:11px;padding:13px 15px;
+  border-radius:var(--rl);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid;box-shadow:0 8px 32px rgba(0,0,0,.45);pointer-events:all;
+  animation:toastIn .35s var(--spring) forwards;position:relative;overflow:hidden;cursor:pointer}
+.toast.out{animation:toastOut .25s var(--ease) forwards}
+.toast::after{content:'';position:absolute;bottom:0;left:0;height:3px;width:100%;
+  background:currentColor;opacity:.45;transform-origin:left;
+  animation:toastBar linear forwards}
+.t-success{background:rgba(5,28,18,.95);border-color:rgba(16,185,129,.3);color:var(--success-l)}
+.t-error{background:rgba(28,5,5,.95);border-color:rgba(239,68,68,.3);color:var(--danger-l)}
+.t-warning{background:rgba(28,18,2,.95);border-color:rgba(245,158,11,.3);color:var(--warning-l)}
+.t-info{background:rgba(3,12,28,.95);border-color:rgba(59,130,246,.3);color:var(--info-l)}
+.toast-ico{flex-shrink:0;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.t-success .toast-ico{background:var(--success-bg)}
+.t-error .toast-ico{background:var(--danger-bg)}
+.t-warning .toast-ico{background:var(--warning-bg)}
+.t-info .toast-ico{background:var(--info-bg)}
+.toast-body{flex:1;min-width:0}
+.toast-title{font-size:13px;font-weight:800;line-height:1.3}
+.toast-msg{font-size:11px;font-weight:500;opacity:.8;margin-top:2px;line-height:1.4}
+.toast-x{flex-shrink:0;width:18px;height:18px;display:flex;align-items:center;justify-content:center;
+  opacity:.5;cursor:pointer;border-radius:4px;background:none;border:none;color:inherit;font-size:13px}
+.toast-x:hover{opacity:1;background:rgba(255,255,255,.1)}
+@keyframes toastIn{from{opacity:0;transform:translateX(110%) scale(.9)}to{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes toastOut{from{opacity:1;transform:translateX(0);max-height:200px}to{opacity:0;transform:translateX(110%);max-height:0;margin-bottom:-10px}}
+@keyframes toastBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+
+/* ================================================================
+   LOADING OVERLAY
+================================================================ */
+#loadingOverlay{
+  position:fixed;inset:0;z-index:8900;display:flex;align-items:center;justify-content:center;
+  background:rgba(9,16,30,.88);backdrop-filter:blur(14px);
+  opacity:0;pointer-events:none;transition:opacity .3s}
+#loadingOverlay.on{opacity:1;pointer-events:all}
+.load-card{
+  background:rgba(15,23,42,.97);border:1px solid var(--border);border-radius:var(--rxl);
+  padding:44px 36px;text-align:center;max-width:400px;width:calc(100% - 32px);
+  box-shadow:0 32px 80px rgba(0,0,0,.6)}
+.load-spinner{
+  width:68px;height:68px;border-radius:50%;border:3px solid rgba(99,102,241,.2);
+  border-top-color:var(--primary);animation:spin .85s linear infinite;margin:0 auto 22px;position:relative}
+.load-spinner::after{
+  content:'';position:absolute;inset:7px;border-radius:50%;
+  border:3px solid transparent;border-top-color:rgba(99,102,241,.4);
+  animation:spin 1.4s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-title{font-size:18px;font-weight:800;margin-bottom:6px}
+.load-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+.prog-track{background:rgba(99,102,241,.15);border-radius:99px;height:6px;overflow:hidden}
+.prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary),var(--primary-l));transition:width .3s}
+.load-fname{margin-top:10px;font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ================================================================
+   CROP MODAL
+================================================================ */
+#cropModal{
+  position:fixed;inset:0;z-index:8000;display:none;align-items:center;justify-content:center;
+  background:rgba(9,16,30,.92);backdrop-filter:blur(20px);padding:16px}
+#cropModal.on{display:flex}
+.crop-shell{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--rxl);
+  width:100%;max-width:920px;max-height:calc(100vh - 32px);
+  display:flex;flex-direction:column;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.7)}
+.crop-head{
+  padding:18px 22px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.crop-head h3{font-size:15px;font-weight:800;display:flex;align-items:center;gap:9px}
+.crop-body{display:flex;flex:1;overflow:hidden;min-height:0}
+.crop-canvas-area{
+  flex:1;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:repeating-conic-gradient(rgba(148,163,184,.05) 0% 25%,transparent 0% 50%) 0 0/18px 18px;
+  position:relative;overflow:hidden;min-width:0;cursor:crosshair}
+#cropCanvas{max-width:100%;max-height:100%;display:block;border-radius:8px;user-select:none;-webkit-user-select:none}
+.crop-side{
+  width:200px;flex-shrink:0;border-left:1px solid var(--border);padding:16px;
+  overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.crop-foot{
+  padding:14px 22px;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  flex-shrink:0;background:rgba(30,41,59,.4)}
+.crop-info{font-size:12px;color:var(--text2);font-weight:700}
+.ar-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.ar-btn{
+  padding:7px 5px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);
+  color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;text-align:center;
+  transition:all .18s;font-family:inherit}
+.ar-btn:hover{border-color:var(--primary);color:var(--primary-l)}
+.ar-btn.on{border-color:var(--primary);background:rgba(99,102,241,.15);color:var(--primary-l)}
+
+/* ================================================================
+   HEADER
+================================================================ */
+header{
+  position:sticky;top:0;z-index:200;height:var(--hh);
+  background:rgba(9,16,30,.88);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:14px}
+.logo{display:flex;align-items:center;gap:11px;flex-shrink:0;text-decoration:none}
+.logo-ico{
+  width:40px;height:40px;border-radius:11px;
+  background:linear-gradient(135deg,#6366f1,#4338ca);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(99,102,241,.45);flex-shrink:0;color:#fff}
+.logo-t h1{font-size:15px;font-weight:900;color:var(--text);letter-spacing:-.3px}
+.logo-t p{font-size:9px;font-weight:800;color:var(--primary-l);letter-spacing:.12em;text-transform:uppercase}
+.htabs{display:flex;align-items:center;gap:3px;flex:1;justify-content:center;overflow-x:auto;padding:0 6px}
+.htabs::-webkit-scrollbar{height:0}
+.htab{
+  display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:9px;
+  border:none;background:transparent;color:var(--text3);font-size:12px;font-weight:700;
+  cursor:pointer;transition:all .18s;white-space:nowrap;font-family:inherit}
+.htab:hover{color:var(--text);background:rgba(148,163,184,.08)}
+.htab.on{color:var(--primary-l);background:rgba(99,102,241,.13)}
+.htab .icon{margin-right:2px}
+.hactions{display:flex;align-items:center;gap:7px;flex-shrink:0}
+
+/* ================================================================
+   BUTTONS
+================================================================ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:8px 16px;border-radius:var(--r);border:none;font-family:inherit;
+  font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;
+  text-decoration:none;white-space:nowrap;letter-spacing:.01em}
+.btn:disabled{opacity:.38;cursor:not-allowed;pointer-events:none}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-d));color:#fff;
+  box-shadow:0 4px 14px rgba(99,102,241,.35)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(99,102,241,.5)}
+.btn-success{background:linear-gradient(135deg,var(--success),#059669);color:#fff;
+  box-shadow:0 4px 14px rgba(16,185,129,.3)}
+.btn-success:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(16,185,129,.45)}
+.btn-ghost{background:rgba(148,163,184,.08);color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:rgba(148,163,184,.15);color:var(--text)}
+.btn-danger{background:var(--danger-bg);color:var(--danger-l);border:1px solid rgba(239,68,68,.25)}
+.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-icon{width:36px;height:36px;padding:0;border-radius:9px}
+.btn-sm{padding:6px 11px;font-size:11px;border-radius:7px}
+.btn-lg{padding:13px 26px;font-size:14px;border-radius:14px}
+.btn-block{width:100%;justify-content:center}
+
+/* ================================================================
+   FORM INPUTS
+================================================================ */
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field:last-child{margin-bottom:0}
+.fl{font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
+.inp,.sel{
+  width:100%;padding:9px 12px;border-radius:var(--r);border:1px solid var(--border);
+  background:rgba(26,36,56,.7);color:var(--text);font-family:inherit;
+  font-size:12px;font-weight:600;outline:none;transition:all .18s;-webkit-appearance:none;appearance:none}
+.inp:focus,.sel:focus{border-color:var(--primary);background:rgba(26,36,56,.9);box-shadow:0 0 0 3px var(--primary-glow)}
+.inp::placeholder{color:var(--text3);font-weight:500}
+.sel-wrap{position:relative}
+.sel-wrap::after{content:'';position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;
+  border-top:5px solid var(--text3);pointer-events:none}
+.sel{padding-right:28px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+input[type=range]{
+  -webkit-appearance:none;width:100%;height:4px;
+  background:rgba(99,102,241,.2);border-radius:99px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--primary);
+  border:2px solid rgba(255,255,255,.25);box-shadow:0 2px 8px rgba(99,102,241,.5);transition:all .18s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25);box-shadow:0 2px 14px rgba(99,102,241,.7)}
+
+/* Toggle */
+.tgl-wrap{display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none}
+.tgl-inp{display:none}
+.tgl-track{width:34px;height:18px;border-radius:99px;background:rgba(148,163,184,.18);
+  border:1px solid var(--border);position:relative;transition:all .2s;flex-shrink:0}
+.tgl-thumb{position:absolute;left:2px;top:50%;transform:translateY(-50%);
+  width:12px;height:12px;border-radius:50%;background:var(--text2);transition:all .25s var(--spring)}
+.tgl-inp:checked + .tgl-track{background:var(--primary);border-color:var(--primary-d)}
+.tgl-inp:checked + .tgl-track .tgl-thumb{left:calc(100% - 14px);background:#fff}
+.tgl-lbl{font-size:12px;font-weight:600;color:var(--text2)}
+
+/* Color input */
+input[type=color]{width:28px;height:28px;border-radius:6px;border:none;background:none;padding:0;cursor:pointer;-webkit-appearance:none}
+
+/* ================================================================
+   APP LAYOUT
+================================================================ */
+.app{display:grid;grid-template-columns:var(--sidebar) 1fr;min-height:calc(100vh - var(--hh))}
+.sidebar{
+  border-right:1px solid var(--border);background:rgba(15,23,42,.45);
+  overflow-y:auto;position:sticky;top:var(--hh);height:calc(100vh - var(--hh));
+  padding:16px 13px;display:flex;flex-direction:column;gap:10px}
+.main{padding:22px;display:flex;flex-direction:column;gap:18px;min-width:0;padding-bottom:80px}
+
+/* ================================================================
+   PANELS
+================================================================ */
+.panel{background:rgba(15,23,42,.72);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;backdrop-filter:blur(10px)}
+.panel-head{padding:13px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:9px}
+.panel-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(99,102,241,.13);flex-shrink:0}
+.panel-title{font-size:13px;font-weight:800;color:var(--text)}
+.panel-body{padding:14px 16px}
+.sep{border:none;border-top:1px solid var(--border2);margin:4px 0}
+
+/* Tab panels (sidebar) */
+.tpanel{display:none;flex-direction:column;gap:10px}
+.tpanel.on{display:flex}
+
+/* Process CTA */
+.process-cta{
+  width:100%;padding:13px 22px;border-radius:var(--rl);border:none;
+  background:linear-gradient(135deg,var(--primary) 0%,#4338ca 100%);color:#fff;
+  font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:9px;
+  box-shadow:0 4px 20px rgba(99,102,241,.4),inset 0 1px 0 rgba(255,255,255,.14);
+  position:relative;overflow:hidden;letter-spacing:.01em}
+.process-cta::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12) 0%,transparent 100%);opacity:0;transition:opacity .2s}
+.process-cta:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(99,102,241,.55)}
+.process-cta:hover::before{opacity:1}
+.process-cta:active{transform:translateY(0)}
+
+/* ================================================================
+   UPLOAD ZONE
+================================================================ */
+.upload-zone{
+  border:2px dashed rgba(99,102,241,.28);border-radius:var(--rxl);
+  background:rgba(99,102,241,.03);padding:36px 22px;text-align:center;
+  transition:all .22s;position:relative;cursor:pointer}
+.upload-zone:hover,.upload-zone.drag-on{border-color:var(--primary);background:rgba(99,102,241,.09)}
+.upload-zone.drag-on{transform:scale(1.01)}
+.upload-ico{
+  width:76px;height:76px;margin:0 auto 18px;border-radius:18px;
+  background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .3s var(--spring);color:var(--primary)}
+.upload-zone:hover .upload-ico{transform:scale(1.1) rotate(5deg);background:rgba(99,102,241,.18)}
+.upload-ttl{font-size:19px;font-weight:900;color:var(--text);margin-bottom:7px}
+.upload-sub{font-size:13px;color:var(--text2);margin-bottom:20px;font-weight:500}
+.fmt-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin-bottom:20px}
+.fmt-chip{padding:3px 9px;border-radius:99px;font-size:10px;font-weight:800;background:rgba(148,163,184,.08);color:var(--text2);border:1px solid var(--border)}
+.upload-acts{display:flex;justify-content:center;gap:9px;flex-wrap:wrap}
+.file-count-badge{
+  position:absolute;top:14px;right:16px;background:var(--primary);color:#fff;
+  padding:3px 10px;border-radius:99px;font-size:11px;font-weight:800;display:none}
+
+/* ================================================================
+   STATS
+================================================================ */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.stat{
+  background:rgba(15,23,42,.72);border:1px solid var(--border);border-radius:var(--rl);
+  padding:16px 14px;position:relative;overflow:hidden;transition:all .2s;backdrop-filter:blur(10px)}
+.stat:hover{transform:translateY(-2px);border-color:rgba(148,163,184,.2)}
+.stat-glow{position:absolute;width:70px;height:70px;border-radius:50%;top:-18px;right:-18px;opacity:.14}
+.stat-lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:7px;position:relative}
+.stat-val{font-size:24px;font-weight:900;letter-spacing:-.5px;position:relative;line-height:1}
+.stat-sub{font-size:10px;font-weight:600;color:var(--text3);margin-top:3px;position:relative}
+.s-files .stat-val{color:var(--info-l)}.s-files .stat-glow{background:var(--info)}
+.s-orig .stat-val{color:var(--text)}.s-orig .stat-glow{background:var(--text2)}
+.s-opt .stat-val{color:var(--primary-l)}.s-opt .stat-glow{background:var(--primary)}
+.s-saved{background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(5,150,105,.06));border-color:rgba(16,185,129,.2)}
+.s-saved .stat-val{color:var(--success-l)}.s-saved .stat-glow{background:var(--success)}
+
+/* ================================================================
+   RESULTS
+================================================================ */
+.results-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.results-ttl{font-size:15px;font-weight:800;color:var(--text)}
+.results-sub{font-size:12px;color:var(--text2);margin-top:2px;font-weight:500}
+.results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+
+/* Result card */
+.rcard{
+  background:rgba(15,23,42,.72);border:1px solid var(--border);border-radius:var(--rl);
+  overflow:hidden;transition:all .22s;backdrop-filter:blur(10px);
+  animation:cardIn .35s var(--ease) forwards}
+.rcard:hover{transform:translateY(-3px);border-color:rgba(148,163,184,.22);box-shadow:0 14px 42px rgba(0,0,0,.35)}
+@keyframes cardIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* Before/After slider */
+.ba-wrap{position:relative;height:190px;overflow:hidden;cursor:ew-resize;background:repeating-conic-gradient(rgba(148,163,184,.05) 0% 25%,transparent 0% 50%) 0 0/18px 18px}
+.ba-before,.ba-after{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.ba-before img,.ba-after img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
+.ba-after{clip-path:inset(0 50% 0 0)}
+.ba-line{position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--primary);z-index:10;pointer-events:none}
+.ba-handle{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:30px;height:30px;border-radius:50%;background:var(--primary);
+  border:3px solid #fff;z-index:11;display:flex;align-items:center;justify-content:center;
+  font-size:9px;color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.5);pointer-events:none}
+.ba-labels{position:absolute;top:8px;left:0;right:0;display:flex;justify-content:space-between;padding:0 9px;pointer-events:none;z-index:5}
+.ba-lbl{padding:2px 7px;border-radius:99px;font-size:9px;font-weight:800;letter-spacing:.04em;background:rgba(9,16,30,.72);color:var(--text2);backdrop-filter:blur(8px)}
+
+/* Card body */
+.card-body{padding:13px 14px}
+.card-fname{font-size:12px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px}
+.card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:9px}
+.cs{text-align:center;background:rgba(30,41,59,.5);border-radius:8px;padding:7px 5px}
+.cs-lbl{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:2px}
+.cs-val{font-size:11px;font-weight:800;color:var(--text2)}
+.cs-val.g{color:var(--success-l)}.cs-val.r{color:var(--danger-l)}.cs-val.p{color:var(--primary-l)}
+.card-dims{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.dims-sep{color:var(--primary-l)}
+.card-acts{display:flex;gap:7px}
+.card-quality-bar{height:3px;border-radius:99px;background:rgba(148,163,184,.1);margin-bottom:8px;overflow:hidden}
+.cqb-fill{height:100%;border-radius:99px;transition:width .5s}
+
+/* Error card */
+.rcard.err{border-color:rgba(239,68,68,.28)}
+.err-body{padding:18px 14px;display:flex;gap:12px;align-items:flex-start}
+.err-ico{width:44px;height:44px;border-radius:10px;background:var(--danger-bg);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.err-name{font-size:12px;font-weight:800;color:var(--text);margin-bottom:5px}
+.err-msg{font-size:11px;font-weight:600;color:var(--danger-l);line-height:1.5;margin-bottom:9px}
+
+/* Empty state */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 22px;text-align:center;border:2px dashed rgba(148,163,184,.1);border-radius:var(--rxl)}
+.empty-ico{font-size:44px;margin-bottom:14px;opacity:.45}
+.empty-ttl{font-size:15px;font-weight:800;color:var(--text2);margin-bottom:7px}
+.empty-sub{font-size:12px;color:var(--text3);max-width:280px;line-height:1.65}
+
+/* ================================================================
+   SOCIAL MEDIA STUDIO (Real Logos + Premium Grid)
+================================================================ */
+.platform-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.plat-card{
+  border-radius:var(--r);border:2px solid var(--border);padding:12px 6px;
+  text-align:center;cursor:pointer;transition:all .22s var(--spring);background:rgba(26,36,56,.5);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.plat-card:hover{transform:translateY(-2px);border-color:rgba(148,163,184,.2)}
+.plat-card.on{border-color:var(--primary);background:rgba(99,102,241,.12);box-shadow:0 0 12px var(--primary-glow)}
+.plat-logo{width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+.plat-logo svg{width:100%;height:100%;fill:currentColor}
+.plat-name{font-size:10px;font-weight:800;color:var(--text);line-height:1.2}
+.plat-cnt{font-size:9px;font-weight:600;color:var(--text3);margin-top:1px}
+.preset-list{display:flex;flex-direction:column;gap:7px}
+.preset-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 12px;border-radius:var(--r);background:rgba(26,36,56,.5);
+  border:1px solid var(--border);cursor:pointer;transition:all .18s}
+.preset-item:hover{border-color:var(--primary);background:rgba(99,102,241,.08)}
+.preset-item.on{border-color:var(--primary);background:rgba(99,102,241,.12)}
+.preset-name{font-size:12px;font-weight:700;color:var(--text)}
+.preset-dim{font-size:10px;font-weight:700;color:var(--text3);font-variant-numeric:tabular-nums}
+
+/* ================================================================
+   FILTER SLIDERS
+================================================================ */
+.filter-row{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.filter-lbl{width:78px;flex-shrink:0;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+.filter-val{width:32px;flex-shrink:0;text-align:right;font-size:10px;font-weight:800;color:var(--primary-l);font-variant-numeric:tabular-nums}
+.filter-prev{
+  width:100%;aspect-ratio:16/9;border-radius:var(--r);
+  background:rgba(26,36,56,.5);border:1px dashed var(--border);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  margin-bottom:12px;position:relative}
+.filter-prev img{width:100%;height:100%;object-fit:contain}
+.filter-prev-placeholder{font-size:28px;opacity:.35}
+
+/* ================================================================
+   QUICK ACTIONS
+================================================================ */
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.qbtn{
+  padding:10px 8px;border-radius:var(--r);border:1px solid var(--border);
+  background:rgba(26,36,56,.5);color:var(--text2);font-size:10px;font-weight:700;
+  cursor:pointer;text-align:center;transition:all .18s;font-family:inherit;
+  display:flex;flex-direction:column;align-items:center;gap:4px}
+.qbtn:hover{border-color:var(--primary);color:var(--primary-l);background:rgba(99,102,241,.08);transform:translateY(-1px)}
+.qbtn svg{color:var(--primary-l)}
+
+/* ================================================================
+   WATERMARK
+================================================================ */
+.wm-pos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.wm-pos-btn{
+  aspect-ratio:1;border-radius:6px;border:1px solid var(--border);background:rgba(26,36,56,.5);
+  cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;font-size:10px}
+.wm-pos-btn:hover{border-color:var(--primary)}
+.wm-pos-btn.on{border-color:var(--primary);background:rgba(99,102,241,.15);color:var(--primary-l)}
+
+/* ================================================================
+   SELECT SM (compact)
+================================================================ */
+.sel-sm{
+  padding:6px 24px 6px 9px;border-radius:7px;border:1px solid var(--border);
+  background:rgba(26,36,56,.7);color:var(--text2);font-family:inherit;
+  font-size:11px;font-weight:700;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none}
+
+/* ================================================================
+   SECTION HEADER IN SIDEBAR
+================================================================ */
+.sec-head{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);padding:0 3px;display:flex;align-items:center;gap:7px;margin-bottom:2px}
+
+/* ================================================================
+   NOTIFICATION HISTORY PANEL
+================================================================ */
+#notifPanel{
+  position:fixed;top:calc(var(--hh) + 10px);right:14px;z-index:7000;
+  width:min(340px,calc(100vw - 28px));background:rgba(9,16,30,.97);border:1px solid var(--border);
+  border-radius:var(--rxl);backdrop-filter:blur(28px);box-shadow:0 20px 60px rgba(0,0,0,.55);
+  display:none;flex-direction:column;max-height:460px;overflow:hidden}
+#notifPanel.on{display:flex}
+.notif-ph{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.notif-ph span{font-size:13px;font-weight:800}
+.notif-list{flex:1;overflow-y:auto;padding:10px}
+.notif-item{display:flex;gap:9px;padding:9px;border-radius:9px;margin-bottom:6px;background:rgba(26,36,56,.6)}
+.notif-item-ico{font-size:14px;flex-shrink:0;margin-top:1px}
+.notif-item-t{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px}
+.notif-item-m{font-size:11px;color:var(--text2);font-weight:500;line-height:1.4}
+.notif-item-time{font-size:9px;color:var(--text3);font-weight:600;margin-top:2px}
+
+/* ================================================================
+   BADGES
+================================================================ */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.03em}
+.b-success{background:var(--success-bg);color:var(--success-l);border:1px solid rgba(16,185,129,.25)}
+.b-warning{background:var(--warning-bg);color:var(--warning-l);border:1px solid rgba(245,158,11,.25)}
+.b-danger{background:var(--danger-bg);color:var(--danger-l);border:1px solid rgba(239,68,68,.25)}
+.b-primary{background:rgba(99,102,241,.15);color:var(--primary-l);border:1px solid rgba(99,102,241,.3)}
+.b-gray{background:rgba(148,163,184,.1);color:var(--text2);border:1px solid var(--border)}
+.b-webp{background:rgba(99,102,241,.15);color:var(--primary-l)}
+.b-jpeg,.b-jpg{background:rgba(245,158,11,.15);color:var(--warning-l)}
+.b-png{background:rgba(59,130,246,.15);color:var(--info-l)}
+.b-avif{background:rgba(16,185,129,.15);color:var(--success-l)}
+
+/* ================================================================
+   ACCORDION
+================================================================ */
+.acc-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:12px 0;user-select:none;border-top:1px solid var(--border2)}
+.acc-head:first-child{border-top:none}
+.acc-head-l{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--text)}
+.acc-arrow{transition:transform .22s;color:var(--text3);font-size:11px}
+.acc-body{overflow:hidden;max-height:0;transition:max-height .3s var(--ease)}
+.acc-body.open{max-height:600px}
+
+/* Format indicators */
+.fmt-ind{display:inline-block;padding:1px 5px;border-radius:4px;font-size:8px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;margin-left:4px}
+
+/* ================================================================
+   MOBILE NAVIGATION (PREMIUM APP-STYLE TAB BAR)
+================================================================ */
+@media(max-width:900px){
+  body{padding-bottom:70px}
+  .app{grid-template-columns:1fr}
+  .sidebar{
+    position:fixed;bottom:64px;left:0;right:0;top:auto;
+    height:360px;z-index:1000;background:rgba(9,16,30,.96);
+    border-right:none;border-top:1px solid var(--border);
+    backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
+    padding:16px 14px;box-shadow:0 -10px 30px rgba(0,0,0,.5);
+    border-radius:20px 20px 0 0;
+    transform:translateY(0);transition:transform .3s var(--ease);
+  }
+  .sidebar.collapsed{transform:translateY(calc(100% - 40px))} /* Slide down leaving pull-handle */
+  
+  /* Mobile drag handle for collapsing/opening panel */
+  .mobile-handle{
+    display:flex;width:100%;height:20px;justify-content:center;align-items:center;
+    position:absolute;top:0;left:0;cursor:pointer;z-index:1010}
+  .mobile-handle::before{
+    content:'';width:40px;height:4px;background:rgba(148,163,184,.3);border-radius:99px}
+
+  .stats{grid-template-columns:repeat(2,1fr)}
+  
+  /* Tabs bar turns into bottom fixed menu */
+  .htabs{
+    display:flex !important;
+    position:fixed;bottom:0;left:0;right:0;height:64px;
+    background:rgba(9,16,30,.96);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+    border-top:1px solid var(--border);justify-content:space-around;
+    padding:4px 8px;z-index:2000;box-shadow:0 -4px 20px rgba(0,0,0,.45)}
+  .htab{
+    flex:1;flex-direction:column;font-size:9px;font-weight:700;
+    gap:4px;padding:6px 2px;border-radius:8px;justify-content:center;color:var(--text3)}
+  .htab.on{color:var(--primary-l);background:transparent}
+  .htab .icon{width:1.5em;height:1.5em;margin:0}
+  .htab span:not(.icon){display:block;margin-top:2px}
+  .main{padding:14px;padding-bottom:440px} /* Give spacing so bottom drawer doesn't cover results */
+}
+@media(min-width:901px){
+  .mobile-handle{display:none}
+}
+
+@media(max-width:600px){
+  .results-grid{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+
+  <!-- XSS Protection: Safe escaping utility -->
+  <script>
+    // Global safe text utility - use this instead of innerHTML for user data
+    window.safeText = function(str) {
+      const d = document.createElement('div');
+      d.textContent = String(str || '');
+      return d.innerHTML;
+    };
+  </script>
+</head>
+<body>
+
+<!-- TOAST STACK -->
+<div id="toastStack" aria-live="polite" aria-atomic="false"></div>
+
+<!-- NOTIFICATION HISTORY PANEL -->
+<div id="notifPanel">
+  <div class="notif-ph">
+    <span>🔔 Notifications</span>
+    <div style="display:flex;gap:7px">
+      <button class="btn btn-ghost btn-sm" onclick="clearNotifHistory()">Clear</button>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="toggleNotifPanel()">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+  </div>
+  <div class="notif-list" id="notifList">
+    <div style="text-align:center;padding:24px 0;color:var(--text3);font-size:12px">No notifications yet</div>
+  </div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay">
+  <div class="load-card">
+    <div class="load-spinner"></div>
+    <div class="load-title" id="loadTitle">Processing Images</div>
+    <div class="load-sub" id="loadSub">Please wait...</div>
+    <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="load-fname" id="loadFname"></div>
+  </div>
+</div>
+
+<!-- CROP MODAL -->
+<div id="cropModal">
+  <div class="crop-shell">
+    <div class="crop-head">
+      <h3>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M6.13 1L3 16h18L17.87 1z"></path><path d="M4 17h16"></path><path d="M8 22h8"></path></svg>
+        Crop Image
+      </h3>
+      <div style="display:flex;gap:9px;align-items:center">
+        <span id="cropDimInfo" style="font-size:11px;color:var(--text2);font-weight:700"></span>
+        <button class="btn btn-ghost btn-icon btn-sm" onclick="closeCropModal()">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+    <div class="crop-body">
+      <div class="crop-canvas-area">
+        <canvas id="cropCanvas"></canvas>
+      </div>
+      <div class="crop-side">
+        <div>
+          <div class="fl" style="margin-bottom:7px">Aspect Ratio</div>
+          <div class="ar-grid">
+            <button class="ar-btn on" data-ar="free" onclick="setAR('free',this)">🆓 Free</button>
+            <button class="ar-btn" data-ar="1:1" onclick="setAR('1:1',this)">1 : 1</button>
+            <button class="ar-btn" data-ar="4:3" onclick="setAR('4:3',this)">4 : 3</button>
+            <button class="ar-btn" data-ar="3:4" onclick="setAR('3:4',this)">3 : 4</button>
+            <button class="ar-btn" data-ar="16:9" onclick="setAR('16:9',this)">16:9</button>
+            <button class="ar-btn" data-ar="9:16" onclick="setAR('9:16',this)">9:16</button>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div>
+          <div class="fl" style="margin-bottom:7px">Exact Position</div>
+          <div class="row2" style="margin-bottom:7px">
+            <div class="field"><div class="fl">X px</div><input type="number" id="cX" class="inp" style="padding:6px 9px;font-size:11px" oninput="syncCropFromInputs()"></div>
+            <div class="field"><div class="fl">Y px</div><input type="number" id="cY" class="inp" style="padding:6px 9px;font-size:11px" oninput="syncCropFromInputs()"></div>
+          </div>
+          <div class="row2">
+            <div class="field"><div class="fl">W px</div><input type="number" id="cW" class="inp" style="padding:6px 9px;font-size:11px" oninput="syncCropFromInputs()"></div>
+            <div class="field"><div class="fl">H px</div><input type="number" id="cH" class="inp" style="padding:6px 9px;font-size:11px" oninput="syncCropFromInputs()"></div>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div>
+          <div class="fl" style="margin-bottom:7px">Quick Select</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <button class="ar-btn" style="text-align:left;padding:6px 9px" onclick="cropCenterSquare()">⬛ Center Square</button>
+            <button class="ar-btn" style="text-align:left;padding:6px 9px" onclick="cropCenterWide()">▬ Center Wide</button>
+            <button class="ar-btn" style="text-align:left;padding:6px 9px" onclick="cropSelectAll()">🔲 Select All</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="crop-foot">
+      <div class="crop-info" id="cropInfo">Drag to select crop area</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="closeCropModal()">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="applyCrop()">✓ Apply Crop</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     HEADER
+============================================================ -->
+<header>
+  <a class="logo" href="#">
+    <div class="logo-ico">
+      <svg style="width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+    </div>
+    <div class="logo-t">
+      <h1>Image Studio Pro</h1>
+      <p>All-in-One Professional</p>
+    </div>
+  </a>
+  <nav class="htabs" role="tablist">
+    <button class="htab on" data-tab="compress" onclick="switchTab('compress',this)">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M4 14h6v6H4zm10 0h6v6h-6zM4 4h6v6H4zm10 0h6v6h-6z"></path></svg>
+      <span>Compress</span>
+    </button>
+    <button class="htab" data-tab="social" onclick="switchTab('social',this)">
+      <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+      <span>Social Media</span>
+    </button>
+    <button class="htab" data-tab="resize" onclick="switchTab('resize',this)">
+      <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg>
+      <span>Resize &amp; Crop</span>
+    </button>
+    <button class="htab" data-tab="filters" onclick="switchTab('filters',this)">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"></path></svg>
+      <span>Filters</span>
+    </button>
+    <button class="htab" data-tab="watermark" onclick="switchTab('watermark',this)">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+      <span>Watermark</span>
+    </button>
+    <button class="htab" data-tab="convert" onclick="switchTab('convert',this)">
+      <svg class="icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+      <span>Convert</span>
+    </button>
+  </nav>
+  <div class="hactions">
+    <button class="btn btn-ghost btn-icon" id="notifBtn" onclick="toggleNotifPanel()" title="Notification History">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+    </button>
+    <button class="btn btn-ghost btn-sm" onclick="clearAll()" title="Clear workspace">
+      <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+      Clear
+    </button>
+  </div>
+</header>
+
+<!-- ============================================================
+     APP BODY
+============================================================ -->
+<div class="app">
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar collapsed" id="sidebar">
+  <!-- Mobile handle for slide up menu -->
+  <div class="mobile-handle" onclick="toggleMobileDrawer()"></div>
+
+  <!-- ── COMPRESS PANEL ── -->
+  <div class="tpanel on" id="panel-compress">
+    <div class="sec-head">🗜️ Compression Settings</div>
+    <div class="panel">
+      <div class="panel-body">
+        <div class="field">
+          <div class="fl">Output Format</div>
+          <div class="sel-wrap"><select id="outputFormat" class="sel">
+            <option value="image/webp">WebP — Best for Web</option>
+            <option value="image/jpeg">JPEG — Photos / Compatibility</option>
+            <option value="image/png">PNG — Lossless / Transparency</option>
+            <option value="image/avif">AVIF — Next-Gen / Smallest Size</option>
+          </select></div>
+        </div>
+        <div class="field">
+          <div style="display:flex;align-items:center;justify-content:space-between" class="fl">
+            <span>Quality</span>
+            <span id="qualityVal" style="color:var(--primary-l);font-size:11px;font-weight:800">80%</span>
+          </div>
+          <input type="range" id="qualitySlider" min="1" max="100" value="80" oninput="syncQuality()">
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:4px;font-weight:700">
+            <span>Max Compression</span><span>Best Quality</span>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <div class="fl">Target Size</div>
+            <div style="position:relative">
+              <input type="number" id="targetSize" class="inp" min="1" placeholder="Auto" style="padding-right:28px">
+              <span style="position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:9px;font-weight:800;color:var(--text3)">KB</span>
+            </div>
+          </div>
+          <div class="field">
+            <div class="fl">Suffix</div>
+            <input type="text" id="suffix" class="inp" value="-opt">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-head">⚙️ Advanced Tools</div>
+    <div class="panel">
+      <div class="panel-body">
+        <div class="acc-head" onclick="toggleAcc('acc-adv1')">
+          <div class="acc-head-l">🛡️ Privacy &amp; Output</div>
+          <span class="acc-arrow" id="acc-adv1-arrow">▼</span>
+        </div>
+        <div class="acc-body open" id="acc-adv1">
+          <label class="tgl-wrap" style="margin-bottom:9px"><input type="checkbox" id="preventUpscale" class="tgl-inp" checked><div class="tgl-track"><div class="tgl-thumb"></div></div><span class="tgl-lbl">Prevent upscaling</span></label>
+          <label class="tgl-wrap" style="margin-bottom:9px"><input type="checkbox" id="keepSmaller" class="tgl-inp" checked><div class="tgl-track"><div class="tgl-thumb"></div></div><span class="tgl-lbl">Keep original if smaller</span></label>
+          <label class="tgl-wrap" style="margin-bottom:9px"><input type="checkbox" id="stripExif" class="tgl-inp" checked><div class="tgl-track"><div class="tgl-thumb"></div></div><span class="tgl-lbl">Strip EXIF / Metadata</span></label>
+          <label class="tgl-wrap"><input type="checkbox" id="autoDownload" class="tgl-inp"><div class="tgl-track"><div class="tgl-thumb"></div></div><span class="tgl-lbl">Auto-download outputs</span></label>
+        </div>
+        <div class="acc-head" onclick="toggleAcc('acc-adv2')">
+          <div class="acc-head-l">🔄 Geometric Transforms</div>
+          <span class="acc-arrow" id="acc-adv2-arrow">▼</span>
+        </div>
+        <div class="acc-body open" id="acc-adv2">
+          <div class="row2" style="margin-bottom:9px">
+            <div class="field" style="margin-bottom:0"><div class="fl">Rotation</div>
+              <div class="sel-wrap"><select id="rotate" class="sel"><option value="0">0°</option><option value="90">90° CW</option><option value="180">180°</option><option value="270">270° CCW</option></select></div>
+            </div>
+            <div class="field" style="margin-bottom:0"><div class="fl">Canvas BG</div>
+              <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:var(--r);border:1px solid var(--border);background:rgba(26,36,56,.7)">
+                <input type="color" id="bgColor" value="#ffffff"><span id="bgColorHex" style="font-size:10px;font-weight:700;color:var(--text2)">#ffffff</span>
+              </div>
+            </div>
+          </div>
+          <div class="row2">
+            <label class="tgl-wrap"><input type="checkbox" id="flipH" class="tgl-inp"><div class="tgl-track"><div class="tgl-thumb"></div></div><span class="tgl-lbl">Flip Horizontal</span></label>
+            <label class="tgl-wrap"><input type="checkbox" id="flipV" class="tgl-inp"><div class="tgl-track"><div class="tgl-thumb"></div></div><span class="tgl-lbl">Flip Vertical</span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="process-cta" onclick="processAll()">⚡ Compress Images</button>
+  </div>
+
+  <!-- ── SOCIAL MEDIA PANEL ── -->
+  <div class="tpanel" id="panel-social">
+    <div class="sec-head">📱 Social Media Auto-Preset</div>
+    <div class="panel">
+      <div class="panel-body" style="padding:12px">
+        <div class="field">
+          <div class="fl">Choose Platform</div>
+          <div class="platform-grid" id="platformGrid"></div>
+        </div>
+        <div id="presetSection" style="display:none">
+          <div class="fl" style="margin-bottom:7px" id="presetLabel">Presets</div>
+          <div class="preset-list" id="presetList"></div>
+        </div>
+      </div>
+    </div>
+    <div id="socialSelectedInfo" style="display:none" class="panel">
+      <div class="panel-body">
+        <div class="fl" style="margin-bottom:5px">Selected Target Size</div>
+        <div id="socialSelectedName" style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px"></div>
+        <div id="socialSelectedDim" style="font-size:11px;color:var(--primary-l);font-weight:700;margin-bottom:10px"></div>
+        <div class="fl" style="margin-bottom:5px">Crop Adjustment Mode</div>
+        <div class="sel-wrap" style="margin-bottom:10px"><select id="socialCropMode" class="sel">
+          <option value="cover">Cover — Fill &amp; Crop (Recommended)</option>
+          <option value="contain">Contain — Preserve Full Image</option>
+        </select></div>
+      </div>
+    </div>
+    <button class="process-cta" onclick="processSocial()">📱 Apply Social Preset</button>
+  </div>
+
+  <!-- ── RESIZE & CROP PANEL ── -->
+  <div class="tpanel" id="panel-resize">
+    <div class="sec-head">📐 Dimension Scale</div>
+    <div class="panel">
+      <div class="panel-body">
+        <div class="field">
+          <div class="fl">Dimension Preset</div>
+          <div class="sel-wrap"><select id="resizePreset" class="sel" onchange="applyResizePreset()">
+            <option value="">Original Bounds</option>
+            <option value="3840x2160">4K Ultra HD — 3840×2160</option>
+            <option value="2560x1440">2K QHD — 2560×1440</option>
+            <option value="1920x1080">Full HD — 1920×1080</option>
+            <option value="1280x720">HD standard — 1280×720</option>
+            <option value="1080x1080">Square 1:1 — 1080×1080</option>
+            <option value="1200x628">Social Landscape — 1200×628</option>
+            <option value="800x600">SVGA — 800×600</option>
+            <option value="640x480">Compact VGA — 640×480</option>
+            <option value="custom">Custom Scale Bounds…</option>
+          </select></div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <div class="fl">Width Limit</div>
+            <input type="number" id="resizeW" class="inp" min="1" placeholder="Auto" oninput="onResizeManual()">
+          </div>
+          <div class="field">
+            <div class="fl">Height Limit</div>
+            <input type="number" id="resizeH" class="inp" min="1" placeholder="Auto" oninput="onResizeManual()">
+          </div>
+        </div>
+        <div class="field">
+          <div class="fl">Fit Mode</div>
+          <div class="sel-wrap"><select id="fitMode" class="sel">
+            <option value="contain">Contain — Preserve ratio (Fit inside)</option>
+            <option value="cover">Cover — Fill dimensions exactly (Crop borders)</option>
+          </select></div>
+        </div>
+        <label class="tgl-wrap" style="margin-top:4px"><input type="checkbox" id="rPreventUp" class="tgl-inp" checked><div class="tgl-track"><div class="tgl-thumb"></div></div><span class="tgl-lbl">Prevent upscaling</span></label>
+      </div>
+    </div>
+
+    <div class="sec-head">✂️ Visual Cropper</div>
+    <div class="panel">
+      <div class="panel-body">
+        <p style="font-size:11px;color:var(--text2);margin-bottom:11px;line-height:1.6">Crop individual loaded images visually using our interactive editor.</p>
+        <div id="cropFileList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:11px"></div>
+        <button class="btn btn-ghost btn-block" id="openCropBtn" onclick="openCropForFirst()" disabled style="font-size:12px">
+          ✂️ Open Crop Editor
+        </button>
+      </div>
+    </div>
+
+    <button class="process-cta" onclick="processAll()">📐 Scale &amp; Apply</button>
+  </div>
+
+  <!-- ── FILTERS PANEL ── -->
+  <div class="tpanel" id="panel-filters">
+    <div class="sec-head">🎨 Real-time Filters</div>
+    <div class="panel">
+      <div class="panel-body">
+        <div class="filter-prev" id="filterPrev"><div class="filter-prev-placeholder">🖼️</div></div>
+        <div class="filter-row">
+          <div class="filter-lbl">Brightness</div>
+          <input type="range" id="fBrightness" min="0" max="200" value="100" oninput="updateFilterPrev()">
+          <div class="filter-val" id="fBrightnessV">100</div>
+        </div>
+        <div class="filter-row">
+          <div class="filter-lbl">Contrast</div>
+          <input type="range" id="fContrast" min="0" max="200" value="100" oninput="updateFilterPrev()">
+          <div class="filter-val" id="fContrastV">100</div>
+        </div>
+        <div class="filter-row">
+          <div class="filter-lbl">Saturation</div>
+          <input type="range" id="fSaturation" min="0" max="300" value="100" oninput="updateFilterPrev()">
+          <div class="filter-val" id="fSaturationV">100</div>
+        </div>
+        <div class="filter-row">
+          <div class="filter-lbl">Hue Rotate</div>
+          <input type="range" id="fHue" min="-180" max="180" value="0" oninput="updateFilterPrev()">
+          <div class="filter-val" id="fHueV">0°</div>
+        </div>
+        <div class="filter-row">
+          <div class="filter-lbl">Gaussian Blur</div>
+          <input type="range" id="fBlur" min="0" max="20" value="0" step="0.5" oninput="updateFilterPrev()">
+          <div class="filter-val" id="fBlurV">0px</div>
+        </div>
+        <div class="filter-row" style="margin-bottom:11px">
+          <div class="filter-lbl">Sharpen</div>
+          <input type="range" id="fSharpen" min="0" max="10" value="0" step="0.5" oninput="updateFilterPrev()">
+          <div class="filter-val" id="fSharpenV">0</div>
+        </div>
+        <div class="sep" style="margin-bottom:10px"></div>
+        <div class="quick-grid" style="margin-bottom:10px">
+          <button class="qbtn" onclick="applyFilterPreset('grayscale')">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor"></path></svg>
+            Grayscale
+          </button>
+          <button class="qbtn" onclick="applyFilterPreset('sepia')">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            Sepia
+          </button>
+          <button class="qbtn" onclick="applyFilterPreset('vivid')">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            Vivid
+          </button>
+          <button class="qbtn" onclick="applyFilterPreset('cool')">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.75 0L12 5.67l-1.09-1.06a5.5 5.5 0 0 0-7.75 7.75l1.09 1.09 7.75 7.75 7.75-7.75 1.09-1.09a5.5 5.5 0 0 0 0-7.75z"></path></svg>
+            Cool
+          </button>
+          <button class="qbtn" onclick="applyFilterPreset('warm')">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z"></path></svg>
+            Warm
+          </button>
+          <button class="qbtn" onclick="applyFilterPreset('reset')">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+            Reset
+          </button>
+        </div>
+        <label class="tgl-wrap"><input type="checkbox" id="fInvert" class="tgl-inp" onchange="updateFilterPrev()"><div class="tgl-track"><div class="tgl-thumb"></div></div><span class="tgl-lbl">Invert Colors</span></label>
+      </div>
+    </div>
+    <button class="process-cta" onclick="processAll()">🎨 Apply &amp; Render</button>
+  </div>
+
+  <!-- ── WATERMARK PANEL ── -->
+  <div class="tpanel" id="panel-watermark">
+    <div class="sec-head">💧 Watermark Branding</div>
+    <div class="panel">
+      <div class="panel-body">
+        <label class="tgl-wrap" style="margin-bottom:12px"><input type="checkbox" id="wmEnabled" class="tgl-inp" onchange="toggleWM()"><div class="tgl-track"><div class="tgl-thumb"></div></div><span class="tgl-lbl">Enable watermark</span></label>
+        <div id="wmSettings" style="display:none">
+          <div class="field">
+            <div class="fl">Watermark Text</div>
+            <input type="text" id="wmText" class="inp" value="© My Brand" placeholder="Enter watermark text...">
+          </div>
+          <div class="field">
+            <div class="fl" style="margin-bottom:7px">Align Location</div>
+            <div class="wm-pos-grid" id="wmPosGrid">
+              <button class="wm-pos-btn" data-pos="top-left" onclick="setWMPos('top-left',this)">↖</button>
+              <button class="wm-pos-btn" data-pos="top-center" onclick="setWMPos('top-center',this)">↑</button>
+              <button class="wm-pos-btn" data-pos="top-right" onclick="setWMPos('top-right',this)">↗</button>
+              <button class="wm-pos-btn" data-pos="middle-left" onclick="setWMPos('middle-left',this)">←</button>
+              <button class="wm-pos-btn" data-pos="center" onclick="setWMPos('center',this)">⊙</button>
+              <button class="wm-pos-btn" data-pos="middle-right" onclick="setWMPos('middle-right',this)">→</button>
+              <button class="wm-pos-btn" data-pos="bottom-left" onclick="setWMPos('bottom-left',this)">↙</button>
+              <button class="wm-pos-btn" data-pos="bottom-center" onclick="setWMPos('bottom-center',this)">↓</button>
+              <button class="wm-pos-btn on" data-pos="bottom-right" onclick="setWMPos('bottom-right',this)">↘</button>
+            </div>
+          </div>
+          <div class="field">
+            <div class="fl">Font Scale</div>
+            <div class="filter-row" style="margin-bottom:0">
+              <input type="range" id="wmSize" min="10" max="120" value="24" oninput="document.getElementById('wmSizeV').textContent=this.value+'px'">
+              <div class="filter-val" id="wmSizeV" style="width:36px">24px</div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="fl">Opacity</div>
+            <div class="filter-row" style="margin-bottom:0">
+              <input type="range" id="wmOpacity" min="5" max="100" value="70" oninput="document.getElementById('wmOpacityV').textContent=this.value+'%'">
+              <div class="filter-val" id="wmOpacityV" style="width:36px">70%</div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="fl">Text Color</div>
+            <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--r);border:1px solid var(--border);background:rgba(26,36,56,.7)">
+              <input type="color" id="wmColor" value="#ffffff">
+              <span style="font-size:11px;font-weight:600;color:var(--text2)">Fill Hex Color</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="process-cta" onclick="processAll()">💧 Burn Watermark</button>
+  </div>
+
+  <!-- ── CONVERT PANEL ── -->
+  <div class="tpanel" id="panel-convert">
+    <div class="sec-head">🔄 Format Switcher</div>
+    <div class="panel">
+      <div class="panel-body">
+        <div class="field">
+          <div class="fl">Convert Format Target</div>
+          <div class="sel-wrap"><select id="convertFormat" class="sel">
+            <option value="image/webp">WebP — Modern / Web Standard</option>
+            <option value="image/jpeg">JPEG — Full Photo Compatibility</option>
+            <option value="image/png">PNG — Alpha Transparency Preservation</option>
+            <option value="image/avif">AVIF — Ultra Compression / HDR</option>
+          </select></div>
+        </div>
+        <div class="field" id="convertQualityField">
+          <div style="display:flex;align-items:center;justify-content:space-between" class="fl">
+            <span>Encoding Quality</span>
+            <span id="convertQualVal" style="color:var(--primary-l);font-size:11px;font-weight:800">90%</span>
+          </div>
+          <input type="range" id="convertQuality" min="1" max="100" value="90" oninput="document.getElementById('convertQualVal').textContent=this.value+'%'">
+        </div>
+        <div style="background:var(--info-bg);border:1px solid rgba(59,130,246,.2);border-radius:var(--r);padding:10px 12px;margin-top:4px">
+          <div style="font-size:11px;font-weight:700;color:var(--info-l);margin-bottom:4px">🚀 Compatible File Types</div>
+          <div style="font-size:10px;color:var(--text2);line-height:1.65">
+            Imports: <b>JPEG, PNG, WebP, AVIF, GIF, BMP, TIFF, SVG, ICO, HEIC</b>.<br>
+            Note: Dynamic formats like SVG and GIF will render down to static pixel canvases on export.
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="process-cta" onclick="processConvert()">🔄 Batch Convert</button>
+  </div>
+
+</aside>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="main">
+
+  <!-- Upload Zone -->
+  <div class="upload-zone" id="dropZone" onclick="triggerFileInput(event)">
+    <input type="file" id="fileInput" multiple accept="image/*, image/heic, image/heif, image/tiff, image/svg+xml" style="display:none" onchange="onFilesSelected(this.files)">
+    <div class="file-count-badge" id="fileCountBadge"></div>
+    <div class="upload-ico">
+      <svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+    </div>
+    <div class="upload-ttl">Upload your images here</div>
+    <div class="upload-sub">Drag &amp; drop anywhere, or browse from device • Runs 100% locally in-browser</div>
+    <div class="fmt-chips">
+      <span class="fmt-chip">JPEG</span><span class="fmt-chip">PNG</span><span class="fmt-chip">WebP</span>
+      <span class="fmt-chip">AVIF</span><span class="fmt-chip">GIF</span><span class="fmt-chip">BMP</span>
+      <span class="fmt-chip">TIFF</span><span class="fmt-chip">SVG</span><span class="fmt-chip">ICO</span><span class="fmt-chip">HEIC</span>
+    </div>
+    <div class="upload-acts" onclick="event.stopPropagation()">
+      <button class="btn btn-primary btn-lg" onclick="triggerFileInput()">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+        Select Images
+      </button>
+      <button class="btn btn-ghost btn-lg" id="recompBtn" onclick="reprocess()" style="display:none">
+        <svg class="icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        Reprocess
+      </button>
+      <button class="btn btn-success btn-lg" id="dlAllBtn" onclick="downloadZip()" style="display:none">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Download All ZIP
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat s-files"><div class="stat-glow"></div><div class="stat-lbl">Loaded files</div><div class="stat-val" id="sSt-files">0</div><div class="stat-sub">files inside</div></div>
+    <div class="stat s-orig"><div class="stat-glow"></div><div class="stat-lbl">Raw size</div><div class="stat-val" id="sSt-orig">0 KB</div><div class="stat-sub">uncompressed</div></div>
+    <div class="stat s-opt"><div class="stat-glow"></div><div class="stat-lbl">Optimized</div><div class="stat-val" id="sSt-opt">0 KB</div><div class="stat-sub">processed size</div></div>
+    <div class="stat s-saved"><div class="stat-glow"></div><div class="stat-lbl">Saved Space</div><div class="stat-val" id="sSt-saved">0%</div><div class="stat-sub" id="sSt-savedBytes">0 KB saved</div></div>
+  </div>
+
+  <!-- Results -->
+  <div>
+    <div class="results-hd">
+      <div>
+        <div class="results-ttl">Processing Output Results</div>
+        <div class="results-sub" id="resultsSub">No images processed yet — upload images above to get started.</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+        <div style="position:relative">
+          <select class="sel-sm" id="sortBy" onchange="renderResults()">
+            <option value="idx">Upload Sequence</option>
+            <option value="name">File Name</option>
+            <option value="saved">Space Saved</option>
+            <option value="size">Output File Size</option>
+          </select>
+          <div style="position:absolute;right:7px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:8px;color:var(--text3)">▼</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="dlAllBtn2" onclick="downloadZip()" style="display:none">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          ZIP All
+        </button>
+      </div>
+    </div>
+    <div class="results-grid" id="resultsGrid">
+      <div class="empty" style="grid-column:1/-1">
+        <div class="empty-ico">📸</div>
+        <div class="empty-ttl">Studio is empty</div>
+        <div class="empty-sub">Import pictures to compress, crop, scale, filter, watermark and convert. All processing occurs locally.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border2);text-align:center;font-size:11px;font-weight:600;color:var(--text3)">
+    <span id="footYear"></span> SADEEPA LAKSHAN · Image Studio Pro · Secure in-browser local rendering engine 🔒
+  </footer>
+
+</main>
+</div><!-- /.app -->
+
+<script>
+/* ================================================================
+   SVG SOCIAL MEDIA LOGOS
+================================================================ */
+const LOGO_WA = `<svg viewBox="0 0 24 24"><path d="M12.012 2c-5.506 0-9.988 4.482-9.988 9.988 0 1.76.459 3.413 1.264 4.86L2 22l5.318-1.395c1.401.764 2.999 1.2 4.693 1.2 5.506 0 9.988-4.482 9.988-9.988 0-5.507-4.482-9.988-9.987-9.988zm4.99 14.154c-.218.614-1.077 1.129-1.485 1.189-.408.06-1.12.23-2.825-.47-1.706-.7-2.8-.75-3.65-1.9-.85-1.15-1.45-3.05-1.45-4.05 0-1 .45-1.55.75-1.85.3-.3.65-.4.85-.4H10c.2 0 .45.05.65.55.25.6.85 2.05.9 2.15.05.1.1.25 0 .45s-.15.35-.3.5c-.15.15-.3.35-.45.5-.15.15-.05.3.1.55.75 1.25 1.65 2.1 2.7 2.7.25.15.4.1.55-.05.15-.15.65-.75.85-1 .2-.25.4-.2.65-.1s1.6.75 1.85.9c.25.15.4.25.45.35.05.1.05.6-.15 1.2z"/></svg>`;
+const LOGO_IG = `<svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>`;
+const LOGO_FB = `<svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`;
+const LOGO_X  = `<svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`;
+const LOGO_YT = `<svg viewBox="0 0 24 24"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.518 3.545 12 3.545 12 3.545s-7.518 0-9.388.507a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.87.507 9.388.507 9.388.507s7.518 0 9.388-.507a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`;
+const LOGO_IN = `<svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`;
+const LOGO_TT = `<svg viewBox="0 0 24 24"><path d="M12.525.02c1.31-.032 2.612-.008 3.914-.015.08 1.552.705 3.016 1.686 4.195 1.117 1.258 2.65 2.08 4.29 2.23v3.865c-1.78-.047-3.486-.688-4.887-1.81-.1-.08-.155-.102-.27-.015-.224.22-.38.514-.622.723-.097.77-.107 1.552-.107 2.33 0 1.62-.274 3.238-.89 4.707-.847 1.95-2.383 3.563-4.324 4.39-1.928.847-4.116.985-6.136.386-1.884-.543-3.563-1.758-4.636-3.394-1.288-1.93-1.622-4.42-1.002-6.68.563-2.115 1.942-3.957 3.867-5.06C5.59 2.26 7.234 1.75 8.94 1.833c.044 1.265.01 2.536.002 3.8-.934-.055-1.905.123-2.73.585-.92.512-1.62 1.39-1.91 2.4-.413 1.344-.22 2.87.525 4.053.774 1.218 2.115 1.996 3.54 2.102 1.36.14 2.766-.237 3.79-1.127.994-.852 1.516-2.13 1.516-3.42 0-3.325.002-6.65.002-9.975z"/></svg>`;
+const LOGO_PT = `<svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.17-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.162 0 7.397 2.967 7.397 6.93 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z"/></svg>`;
+
+/* ================================================================
+   CONSTANTS — SOCIAL MEDIA PRESETS
+================================================================ */
+const PLATFORMS = {
+  whatsapp: {
+    name:'WhatsApp', logo: LOGO_WA, color:'#25D366',
+    presets:[
+      {name:'Profile Picture (DP)', w:640, h:640},
+      {name:'Status / Story', w:1080, h:1920},
+      {name:'Business Profile', w:640, h:640},
+    ]
+  },
+  instagram: {
+    name:'Instagram', logo: LOGO_IG, color:'#E1306C',
+    presets:[
+      {name:'Square Post', w:1080, h:1080},
+      {name:'Portrait Post', w:1080, h:1350},
+      {name:'Landscape Post', w:1080, h:566},
+      {name:'Story / Reel', w:1080, h:1920},
+      {name:'Profile Picture', w:320, h:320},
+      {name:'IGTV Cover', w:420, h:654},
+    ]
+  },
+  facebook: {
+    name:'Facebook', logo: LOGO_FB, color:'#1877F2',
+    presets:[
+      {name:'Profile Picture', w:170, h:170},
+      {name:'Cover Photo', w:851, h:315},
+      {name:'Post Image', w:1200, h:630},
+      {name:'Story', w:1080, h:1920},
+      {name:'Event Cover', w:1920, h:1080},
+    ]
+  },
+  twitter: {
+    name:'Twitter / X', logo: LOGO_X, color:'#1DA1F2',
+    presets:[
+      {name:'Profile Picture', w:400, h:400},
+      {name:'Header / Banner', w:1500, h:500},
+      {name:'In-Stream Photo', w:1200, h:675},
+    ]
+  },
+  youtube: {
+    name:'YouTube', logo: LOGO_YT, color:'#FF0000',
+    presets:[
+      {name:'Thumbnail', w:1280, h:720},
+      {name:'Channel Art', w:2560, h:1440},
+      {name:'Profile Picture', w:800, h:800},
+      {name:'End Screen', w:1920, h:1080},
+    ]
+  },
+  linkedin: {
+    name:'LinkedIn', logo: LOGO_IN, color:'#0A66C2',
+    presets:[
+      {name:'Profile Picture', w:400, h:400},
+      {name:'Cover Photo', w:1584, h:396},
+      {name:'Post Image', w:1200, h:627},
+      {name:'Company Logo', w:300, h:300},
+    ]
+  },
+  tiktok: {
+    name:'TikTok', logo: LOGO_TT, color:'#010101',
+    presets:[
+      {name:'Profile Picture', w:200, h:200},
+      {name:'Video Cover', w:1080, h:1920},
+    ]
+  },
+  pinterest: {
+    name:'Pinterest', logo: LOGO_PT, color:'#E60023',
+    presets:[
+      {name:'Standard Pin', w:1000, h:1500},
+      {name:'Square Pin', w:1000, h:1000},
+      {name:'Profile Picture', w:165, h:165},
+    ]
+  },
+};
+
+/* ================================================================
+   STATE
+================================================================ */
+const S = {
+  files: [],            // File[] originals
+  processed: [],        // result objects
+  cropData: [],         // per-file crop rects {x,y,w,h} in original pixels (or null)
+  activePlatform: null,
+  activePreset: null,
+  wmPos: 'bottom-right',
+  notifHistory: [],
+  toastTimers: {},
+};
+
+const cropState = {
+  img: null, file: null, fileIdx: -1,
+  rect: {x:0,y:0,w:0,h:0}, // in canvas pixels
+  ar: null, // null=free or {w,h}
+  drag: {on:false, type:'', sx:0, sy:0, sr:null},
+  cScale: 1, // canvas pixels per image pixel
+};
+
+/* ================================================================
+   UTILITIES
+================================================================ */
+const $=id=>document.getElementById(id);
+const fmtSize=b=>{if(!b)return'0 B';const u=['B','KB','MB','GB'];const i=Math.min(Math.floor(Math.log(b)/Math.log(1024)),3);return(b/1024**i).toFixed(i?2:0)+' '+u[i]};
+const safeName=s=>s.replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim();
+const baseName=f=>{const d=f.lastIndexOf('.');return d>0?f.slice(0,d):f};
+const ext=m=>({['image/webp']:'webp',['image/jpeg']:'jpg',['image/png']:'png',['image/avif']:'avif'})[m]||'img';
+const now=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+
+/* ================================================================
+   TOAST NOTIFICATION SYSTEM
+================================================================ */
+const TOAST_ICONS = {success:'✅', error:'❌', warning:'⚠️', info:'ℹ️'};
+const TOAST_TITLES = {success:'Success', error:'Error', warning:'Warning', info:'Info'};
+const TOAST_DUR = {success:4000, error:6000, warning:5000, info:4000};
+
+let toastId = 0;
+function toast(msg, type='info', detail='', duration=0) {
+  const id = ++toastId;
+  const ms = duration || TOAST_DUR[type];
+  const stack = $('toastStack');
+  const el = document.createElement('div');
+  el.className = `toast t-${type}`;
+  el.id = `toast-${id}`;
+  el.style.setProperty('--dur', ms+'ms');
+  el.style.cssText += `;--dur:${ms}ms`;
+  el.innerHTML = `
+    <div class="toast-ico">${TOAST_ICONS[type]}</div>
+    <div class="toast-body">
+      <div class="toast-title">${TOAST_TITLES[type]}: ${msg}</div>
+      ${detail ? `<div class="toast-msg">${detail}</div>` : ''}
+    </div>
+    <button class="toast-x" onclick="dismissToast(${id})">✕</button>`;
+  el.querySelector('.toast-x').addEventListener('click', e => { e.stopPropagation(); dismissToast(id); });
+  el.addEventListener('click', () => dismissToast(id));
+
+  const styleEl = document.createElement('style');
+  styleEl.textContent = `#toast-${id}::after { animation-duration: ${ms}ms; }`;
+  document.head.appendChild(styleEl);
+
+  stack.appendChild(el);
+  S.toastTimers[id] = setTimeout(() => dismissToast(id), ms);
+
+  addToNotifHistory(msg, type, detail);
+}
+
+function dismissToast(id) {
+  const el = $('toast-'+id);
+  if (!el) return;
+  clearTimeout(S.toastTimers[id]);
+  el.classList.add('out');
+  setTimeout(() => el.remove(), 280);
+}
+
+/* ================================================================
+   NOTIFICATION HISTORY
+================================================================ */
+function addToNotifHistory(msg, type, detail) {
+  const item = {msg, type, detail, time: now(), id: Date.now()};
+  S.notifHistory.unshift(item);
+  if (S.notifHistory.length > 50) S.notifHistory.pop();
+  renderNotifHistory();
+}
+
+function renderNotifHistory() {
+  const list = $('notifList');
+  if (!S.notifHistory.length) {
+    list.innerHTML = '<div style="text-align:center;padding:24px 0;color:var(--text3);font-size:12px">No notifications yet</div>';
+    return;
+  }
+  list.innerHTML = S.notifHistory.map(n => `
+    <div class="notif-item">
+      <div class="notif-item-ico">${TOAST_ICONS[n.type]}</div>
+      <div>
+        <div class="notif-item-t">${n.msg}</div>
+        ${n.detail ? `<div class="notif-item-m">${n.detail}</div>` : ''}
+        <div class="notif-item-time">🕐 ${n.time}</div>
+      </div>
+    </div>`).join('');
+}
+
+function clearNotifHistory() {
+  S.notifHistory = [];
+  renderNotifHistory();
+  toast('Notification history cleared', 'info');
+}
+
+function toggleNotifPanel() {
+  const p = $('notifPanel');
+  p.classList.toggle('on');
+  if (p.classList.contains('on')) {
+    setTimeout(() => {
+      function outside(e) {
+        if (!p.contains(e.target) && !$('notifBtn').contains(e.target)) {
+          p.classList.remove('on');
+          document.removeEventListener('click', outside);
+        }
+      }
+      document.addEventListener('click', outside);
+    }, 50);
+  }
+}
+
+/* ================================================================
+   MOBILE DRAWER PULL UP
+================================================================ */
+function toggleMobileDrawer() {
+  const sidebar = $('sidebar');
+  sidebar.classList.toggle('collapsed');
+}
+
+/* ================================================================
+   LOADING OVERLAY
+================================================================ */
+function setLoading(on, title='Processing', sub='Please wait...', prog=0, fname='') {
+  const ov = $('loadingOverlay');
+  ov.classList.toggle('on', on);
+  $('loadTitle').textContent = title;
+  $('loadSub').textContent = sub;
+  $('progFill').style.width = prog + '%';
+  $('loadFname').textContent = fname;
+}
+
+/* ================================================================
+   TAB SWITCHING
+================================================================ */
+function switchTab(tab, btn) {
+  document.querySelectorAll('.htab').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.tpanel').forEach(p => p.classList.remove('on'));
+  btn.classList.add('on');
+  $('panel-' + tab).classList.add('on');
+  
+  // Auto-expand mobile sidebar when switching tabs on mobile
+  if (window.innerWidth <= 900) {
+    $('sidebar').classList.remove('collapsed');
+  }
+}
+
+/* ================================================================
+   ACCORDION
+================================================================ */
+function toggleAcc(id) {
+  const body = $(id);
+  const arrow = $(id+'-arrow');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  if (arrow) arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+
+/* ================================================================
+   FILE INPUT & DRAG/DROP
+================================================================ */
+function triggerFileInput(e) {
+  if (e && (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.closest('button') || e.target.closest('a'))) return;
+  $('fileInput').click();
+}
+
+function onFilesSelected(files) {
+  const imgs = Array.from(files).filter(f => {
+    // support more formats including HEIC/HEIF and TIFF/SVG/ICO
+    const name = f.name.toLowerCase();
+    return f.type.startsWith('image/') || 
+           name.endsWith('.heic') || 
+           name.endsWith('.heif') || 
+           name.endsWith('.tiff') || 
+           name.endsWith('.tif') || 
+           name.endsWith('.svg') || 
+           name.endsWith('.ico');
+  });
+  if (!imgs.length) { toast('No compatible files found', 'warning', 'Please select image files (JPEG, PNG, WebP, AVIF, HEIC, TIFF, SVG, etc.)'); return; }
+  S.files = imgs;
+  S.processed = [];
+  S.cropData = new Array(imgs.length).fill(null);
+  updateFileCountBadge();
+  updateCropFileList();
+  updateFilterPreview();
+  $('recompBtn').style.display = 'inline-flex';
+  $('dlAllBtn').style.display = 'inline-flex';
+  toast(`${imgs.length} image${imgs.length>1?'s':''} loaded`, 'success', `Total size: ${fmtSize(imgs.reduce((a,f)=>a+f.size,0))}`);
+  processAll();
+}
+
+function updateFileCountBadge() {
+  const b = $('fileCountBadge');
+  if (S.files.length > 0) {
+    b.textContent = `${S.files.length} file${S.files.length>1?'s':''}`;
+    b.style.display = 'block';
+  } else {
+    b.style.display = 'none';
+  }
+}
+
+function reprocess() {
+  if (!S.files.length) { toast('No files loaded', 'warning', 'Please upload images first'); return; }
+  processAll();
+}
+
+const dropZone = $('dropZone');
+['dragenter','dragover','dragleave','drop'].forEach(ev => dropZone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); }));
+['dragenter','dragover'].forEach(ev => dropZone.addEventListener(ev, () => dropZone.classList.add('drag-on')));
+['dragleave','drop'].forEach(ev => dropZone.addEventListener(ev, () => dropZone.classList.remove('drag-on')));
+dropZone.addEventListener('drop', e => onFilesSelected(e.dataTransfer.files));
+
+/* ================================================================
+   GET SETTINGS
+================================================================ */
+function getSettings() {
+  return {
+    mimeType: $('outputFormat').value,
+    quality: parseInt($('qualitySlider').value) / 100,
+    targetSizeBytes: (parseInt($('targetSize').value) || 0) * 1024,
+    suffix: safeName($('suffix').value || '-opt'),
+    // Resize
+    maxW: parseInt($('resizeW').value) || 0,
+    maxH: parseInt($('resizeH').value) || 0,
+    fitMode: $('fitMode').value,
+    preventUpscale: $('rPreventUp').checked,
+    keepSmaller: $('keepSmaller').checked,
+    stripExif: $('stripExif').checked,
+    autoDownload: $('autoDownload').checked,
+    rotate: parseInt($('rotate').value) || 0,
+    bgColor: $('bgColor').value,
+    flipH: $('flipH').checked,
+    flipV: $('flipV').checked,
+    // Filters
+    brightness: parseInt($('fBrightness').value),
+    contrast: parseInt($('fContrast').value),
+    saturation: parseInt($('fSaturation').value),
+    hue: parseInt($('fHue').value),
+    blur: parseFloat($('fBlur').value),
+    sharpen: parseFloat($('fSharpen').value),
+    invert: $('fInvert').checked,
+    // Watermark
+    wmEnabled: $('wmEnabled').checked,
+    wmText: $('wmText').value,
+    wmPos: S.wmPos,
+    wmSize: parseInt($('wmSize').value),
+    wmOpacity: parseInt($('wmOpacity').value) / 100,
+    wmColor: $('wmColor').value,
+  };
+}
+
+/* ================================================================
+   CANVAS PROCESSING
+================================================================ */
+function loadImage(file) {
+  return new Promise((resolve, reject) => {
+    // support SVG, ICO, HEIC, TIFF by letting the browser handle standard imports
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => resolve({img, url, w: img.naturalWidth || 800, h: img.naturalHeight || 600});
+    img.onerror = () => { 
+      URL.revokeObjectURL(url); 
+      reject(new Error('Browser could not decode this image format. If it is HEIC/TIFF, please convert it to JPEG/PNG first or use a modern web browser.')); 
+    };
+    img.src = url;
+  });
+}
+
+function applyFiltersToCtx(ctx, settings) {
+  const filters = [];
+  if (settings.brightness !== 100) filters.push(`brightness(${settings.brightness}%)`);
+  if (settings.contrast !== 100) filters.push(`contrast(${settings.contrast}%)`);
+  if (settings.saturation !== 100) filters.push(`saturate(${settings.saturation}%)`);
+  if (settings.hue !== 0) filters.push(`hue-rotate(${settings.hue}deg)`);
+  if (settings.blur > 0) filters.push(`blur(${settings.blur}px)`);
+  if (settings.invert) filters.push(`invert(1)`);
+  if (filters.length) ctx.filter = filters.join(' ');
+}
+
+function applyWatermark(ctx, cw, ch, settings) {
+  if (!settings.wmEnabled || !settings.wmText.trim()) return;
+  const fs = Math.max(10, Math.min(settings.wmSize, Math.floor(Math.min(cw,ch)/8)));
+  ctx.save();
+  ctx.filter = 'none';
+  ctx.globalAlpha = settings.wmOpacity;
+  ctx.font = `bold ${fs}px Inter, sans-serif`;
+  ctx.fillStyle = settings.wmColor;
+  ctx.textBaseline = 'bottom';
+  const tw = ctx.measureText(settings.wmText).width;
+  const pad = fs * 0.6;
+  let x = pad, y = ch - pad;
+  const p = settings.wmPos;
+  if (p.includes('right')) x = cw - tw - pad;
+  if (p.includes('center') && !p.includes('top') && !p.includes('bottom')) { y = ch/2 + fs/2; }
+  if (p === 'center') { x = (cw - tw) / 2; y = ch/2 + fs/2; }
+  if (p.includes('top')) { y = pad + fs; }
+  if (p.includes('top-center') || p === 'top-center') x = (cw - tw) / 2;
+  if (p.includes('bottom-center') || p === 'bottom-center') x = (cw - tw) / 2;
+  if (p.includes('middle-left')) { y = ch/2 + fs/2; x = pad; }
+  if (p.includes('middle-right')) { y = ch/2 + fs/2; x = cw - tw - pad; }
+  
+  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur = fs * 0.3;
+  ctx.shadowOffsetX = 1;
+  ctx.shadowOffsetY = 1;
+  ctx.fillText(settings.wmText, x, y);
+  ctx.restore();
+}
+
+function applySharpen(ctx, w, h, amount) {
+  if (amount <= 0) return;
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const d = imageData.data;
+  const factor = amount;
+  const k = [-factor, -factor, -factor, -factor, 1+8*factor, -factor, -factor, -factor, -factor];
+  const out = new Uint8ClampedArray(d.length);
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      for (let c = 0; c < 3; c++) {
+        let val = 0;
+        for (let ky = -1; ky <= 1; ky++) {
+          for (let kx = -1; kx <= 1; kx++) {
+            const pi = ((y+ky)*w + (x+kx)) * 4 + c;
+            val += d[pi] * k[(ky+1)*3 + (kx+1)];
+          }
+        }
+        out[(y*w+x)*4+c] = Math.max(0, Math.min(255, val));
+      }
+      out[(y*w+x)*4+3] = d[(y*w+x)*4+3];
+    }
+  }
+  for (let i = 0; i < d.length; i++) { if (out[i] === 0 && d[i] !== 0) out[i] = d[i]; }
+  imageData.data.set(out);
+  ctx.putImageData(imageData, 0, 0);
+}
+
+function drawToCanvas(img, srcW, srcH, settings, cropRect) {
+  const rotated = settings.rotate === 90 || settings.rotate === 270;
+  let baseW = rotated ? srcH : srcW;
+  let baseH = rotated ? srcW : srcH;
+
+  let cropX = 0, cropY = 0, cropW = srcW, cropH = srcH;
+  if (cropRect && cropRect.w > 0 && cropRect.h > 0) {
+    cropX = cropRect.x; cropY = cropRect.y;
+    cropW = cropRect.w; cropH = cropRect.h;
+    baseW = rotated ? cropH : cropW;
+    baseH = rotated ? cropW : cropH;
+  }
+
+  let outW = baseW, outH = baseH;
+  if (settings.maxW > 0 || settings.maxH > 0) {
+    const mW = settings.maxW || 99999;
+    const mH = settings.maxH || 99999;
+    let scale;
+    if (settings.fitMode === 'cover' && settings.maxW > 0 && settings.maxH > 0) {
+      scale = Math.max(mW / baseW, mH / baseH);
+    } else {
+      scale = Math.min(mW / baseW, mH / baseH);
+    }
+    if (settings.preventUpscale) scale = Math.min(scale, 1);
+    outW = Math.max(1, Math.round(baseW * scale));
+    outH = Math.max(1, Math.round(baseH * scale));
+    if (settings.fitMode === 'cover' && settings.maxW > 0 && settings.maxH > 0 && !settings.preventUpscale) {
+      outW = mW; outH = mH;
+    }
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = outW; canvas.height = outH;
+  const ctx = canvas.getContext('2d', {alpha: settings.mimeType !== 'image/jpeg'});
+
+  if (settings.mimeType === 'image/jpeg') { ctx.fillStyle = settings.bgColor; ctx.fillRect(0,0,outW,outH); }
+
+  applyFiltersToCtx(ctx, settings);
+
+  ctx.save();
+  ctx.translate(outW/2, outH/2);
+  ctx.scale(settings.flipH ? -1 : 1, settings.flipV ? -1 : 1);
+  ctx.rotate(settings.rotate * Math.PI / 180);
+
+  const dW = rotated ? outH : outW;
+  const dH = rotated ? outW : outH;
+
+  let drawW = dW, drawH = dH;
+  if (settings.fitMode === 'cover' && settings.maxW > 0 && settings.maxH > 0) {
+    const scaleX = dW / (rotated ? cropH : cropW);
+    const scaleY = dH / (rotated ? cropW : cropH);
+    const sc = Math.max(scaleX, scaleY);
+    drawW = Math.round((rotated ? cropH : cropW) * sc);
+    drawH = Math.round((rotated ? cropW : cropH) * sc);
+  }
+
+  ctx.drawImage(img, cropX, cropY, cropW, cropH, -drawW/2, -drawH/2, drawW, drawH);
+  ctx.restore();
+
+  if (settings.sharpen > 0) {
+    ctx.filter = 'none';
+    applySharpen(ctx, outW, outH, settings.sharpen * 0.15);
+  }
+
+  applyWatermark(ctx, outW, outH, settings);
+
+  return canvas;
+}
+
+function canvasToBlob(canvas, mimeType, quality) {
+  return new Promise((res, rej) => {
+    canvas.toBlob(blob => {
+      if (!blob) rej(new Error(`${mimeType.replace('image/','')} format not supported by this browser.`));
+      else res(blob);
+    }, mimeType, quality);
+  });
+}
+
+async function compressCanvas(canvas, settings) {
+  if (settings.mimeType === 'image/png') {
+    const blob = await canvasToBlob(canvas, 'image/png');
+    return {blob, qualityUsed: 'Lossless', achieved: true};
+  }
+
+  const target = settings.targetSizeBytes;
+  if (!target) {
+    const blob = await canvasToBlob(canvas, settings.mimeType, settings.quality);
+    return {blob, qualityUsed: Math.round(settings.quality*100)+'%', achieved: true};
+  }
+
+  const maxBlob = await canvasToBlob(canvas, settings.mimeType, settings.quality);
+  if (maxBlob.size <= target) {
+    return {blob: maxBlob, qualityUsed: Math.round(settings.quality*100)+'% ✓', achieved: true};
+  }
+
+  const minBlob = await canvasToBlob(canvas, settings.mimeType, 0.01);
+  if (minBlob.size > target) {
+    return {blob: minBlob, qualityUsed: '1% ⚠', achieved: false};
+  }
+
+  let lo = 0.01, hi = settings.quality;
+  let bestBlob = minBlob, bestQ = 0.01;
+  for (let i = 0; i < 12; i++) {
+    const mid = (lo + hi) / 2;
+    const b = await canvasToBlob(canvas, settings.mimeType, mid);
+    if (b.size <= target) { bestBlob = b; bestQ = mid; lo = mid; }
+    else { hi = mid; }
+    if (hi - lo < 0.004) break;
+  }
+  return {blob: bestBlob, qualityUsed: `Auto ${Math.round(bestQ*100)}%`, achieved: true};
+}
+
+async function processFile(file, settings, idx) {
+  const loaded = await loadImage(file);
+  try {
+    const cropRect = S.cropData[idx] || null;
+    const canvas = drawToCanvas(loaded.img, loaded.w, loaded.h, settings, cropRect);
+    let {blob, qualityUsed, achieved} = await compressCanvas(canvas, settings);
+
+    if (settings.keepSmaller && blob.size > file.size && file.type === settings.mimeType && !cropRect) {
+      blob = file; qualityUsed = 'Original kept'; achieved = true;
+    }
+
+    const keptOrig = blob === file;
+    const outUrl = URL.createObjectURL(blob);
+    const origUrl = URL.createObjectURL(file);
+    const savedB = file.size - blob.size;
+    const savedPct = file.size > 0 ? (savedB / file.size) * 100 : 0;
+    const finalMime = keptOrig ? file.type : settings.mimeType;
+    const finalExt = keptOrig ? file.name.split('.').pop() : ext(settings.mimeType);
+    const outName = `${safeName(baseName(file.name))}${settings.suffix}.${finalExt}`;
+
+    if (settings.autoDownload) triggerDL(outUrl, outName);
+    if (!achieved) {
+      toast(`Target size not reachable`, 'warning', `${file.name}: returned minimum quality output`);
+    }
+
+    return {
+      idx, ok: true, outName, origName: file.name,
+      origSize: file.size, outSize: blob.size, savedB, savedPct,
+      inW: loaded.w, inH: loaded.h, outW: canvas.width, outH: canvas.height,
+      outUrl, origUrl, qualityUsed, mimeType: finalMime, keptOrig, achieved
+    };
+  } finally {
+    URL.revokeObjectURL(loaded.url);
+  }
+}
+
+/* ================================================================
+   PROCESS ALL
+================================================================ */
+async function processAll() {
+  if (!S.files.length) { toast('No images loaded', 'warning', 'Please upload images first'); return; }
+  const settings = getSettings();
+  clearProcessed(false);
+  setLoading(true, 'Processing Images', `0 of ${S.files.length} files...`, 0);
+
+  const results = [];
+  for (let i = 0; i < S.files.length; i++) {
+    const f = S.files[i];
+    const pct = Math.round((i / S.files.length) * 100);
+    setLoading(true, 'Processing Images', `File ${i+1} of ${S.files.length}`, pct, f.name);
+    try {
+      results.push(await processFile(f, settings, i));
+    } catch(err) {
+      results.push({idx:i, ok:false, origName:f.name, error:err.message, origSize:f.size, outSize:0, savedB:0, savedPct:0});
+      toast(`Failed: ${f.name}`, 'error', err.message);
+    }
+  }
+
+  S.processed = results;
+  setLoading(false);
+  renderResults();
+  updateStats();
+  const ok = results.filter(r=>r.ok).length;
+  const fail = results.length - ok;
+  if (ok > 0) {
+    const totalSaved = results.filter(r=>r.ok).reduce((a,r)=>a+r.savedB, 0);
+    toast(`${ok} image${ok>1?'s':''} processed!`, 'success',
+      `${fmtSize(Math.max(0,totalSaved))} saved${fail>0?' · '+fail+' failed':''}`);
+  } else {
+    toast('All files failed', 'error', 'Check file formats and try again');
+  }
+}
+
+/* ================================================================
+   SOCIAL MEDIA PROCESSING
+================================================================ */
+async function processSocial() {
+  if (!S.activePreset) { toast('No preset selected', 'warning', 'Choose a social media platform and preset first'); return; }
+  if (!S.files.length) { toast('No images loaded', 'warning', 'Please upload images first'); return; }
+
+  const preset = S.activePreset;
+  const cropMode = $('socialCropMode').value;
+  const s = getSettings();
+  s.maxW = preset.w;
+  s.maxH = preset.h;
+  s.fitMode = cropMode;
+  s.preventUpscale = false;
+
+  clearProcessed(false);
+  setLoading(true, `Applying ${preset.name}`, `Target: ${preset.w}×${preset.h}`, 0);
+
+  const results = [];
+  for (let i = 0; i < S.files.length; i++) {
+    const f = S.files[i];
+    setLoading(true, `${preset.name} — Crop & Resize`, `File ${i+1} of ${S.files.length}`, Math.round(i/S.files.length*100), f.name);
+    try {
+      const rs = {...s};
+      results.push(await processFile(f, rs, i));
+    } catch(err) {
+      results.push({idx:i, ok:false, origName:f.name, error:err.message, origSize:f.size, outSize:0, savedB:0, savedPct:0});
+    }
+  }
+
+  S.processed = results;
+  setLoading(false);
+  renderResults();
+  updateStats();
+  const ok = results.filter(r=>r.ok).length;
+  toast(`${ok} image${ok>1?'s':''} ready for ${preset.name}!`, 'success', `${preset.w}×${preset.h}px — Perfect size`);
+}
+
+/* ================================================================
+   CONVERT
+================================================================ */
+async function processConvert() {
+  if (!S.files.length) { toast('No images loaded', 'warning', 'Please upload images first'); return; }
+  const fmt = $('convertFormat').value;
+  const qual = parseInt($('convertQuality').value) / 100;
+  const s = getSettings();
+  s.mimeType = fmt;
+  s.quality = qual;
+  s.targetSizeBytes = 0;
+
+  clearProcessed(false);
+  setLoading(true, 'Converting Format', `To ${fmt.replace('image/','')}`, 0);
+
+  const results = [];
+  for (let i = 0; i < S.files.length; i++) {
+    const f = S.files[i];
+    setLoading(true, 'Converting', `File ${i+1} of ${S.files.length}`, Math.round(i/S.files.length*100), f.name);
+    try { results.push(await processFile(f, s, i)); }
+    catch(err) { results.push({idx:i, ok:false, origName:f.name, error:err.message, origSize:f.size, outSize:0, savedB:0, savedPct:0}); }
+  }
+  S.processed = results;
+  setLoading(false);
+  renderResults();
+  updateStats();
+  toast(`Converted ${results.filter(r=>r.ok).length} files to ${fmt.replace('image/','')}`, 'success');
+}
+
+/* ================================================================
+   STATS
+================================================================ */
+function updateStats() {
+  const ok = S.processed.filter(r=>r.ok);
+  const totalOrig = ok.reduce((a,r)=>a+r.origSize,0);
+  const totalOut = ok.reduce((a,r)=>a+r.outSize,0);
+  const savedB = totalOrig - totalOut;
+  const savedPct = totalOrig > 0 ? savedB/totalOrig*100 : 0;
+  $('sSt-files').textContent = ok.length;
+  $('sSt-orig').textContent = fmtSize(totalOrig);
+  $('sSt-opt').textContent = fmtSize(totalOut);
+  $('sSt-saved').textContent = Math.max(0,savedPct).toFixed(1)+'%';
+  $('sSt-savedBytes').textContent = fmtSize(Math.max(0,savedB))+' saved';
+}
+
+/* ================================================================
+   RENDER RESULTS
+================================================================ */
+function renderResults() {
+  const grid = $('resultsGrid');
+  if (!S.processed.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-ico">📸</div><div class="empty-ttl">Studio is empty</div><div class="empty-sub">Import pictures to compress, crop, scale, filter, watermark and convert. All processing occurs locally.</div></div>`;
+    $('dlAllBtn').style.display = 'none';
+    $('dlAllBtn2').style.display = 'none';
+    $('resultsSub').textContent = 'No images processed yet — upload images above to get started.';
+    return;
+  }
+
+  const sorted = [...S.processed];
+  const by = $('sortBy').value;
+  if (by === 'name') sorted.sort((a,b) => (a.outName||a.origName).localeCompare(b.outName||b.origName));
+  else if (by === 'saved') sorted.sort((a,b) => b.savedPct - a.savedPct);
+  else if (by === 'size') sorted.sort((a,b) => a.outSize - b.outSize);
+  else sorted.sort((a,b) => a.idx - b.idx);
+
+  grid.innerHTML = sorted.map(r => r.ok ? cardHTML(r) : errCardHTML(r)).join('');
+
+  grid.querySelectorAll('.ba-wrap').forEach(initBASlider);
+
+  const ok = S.processed.filter(r=>r.ok);
+  const fail = S.processed.filter(r=>!r.ok);
+  $('resultsSub').textContent = `${ok.length} processed${fail.length ? ' · '+fail.length+' failed' : ''} — EXIF metadata stripped`;
+  const hasOk = ok.length > 0;
+  $('dlAllBtn').style.display = hasOk ? 'inline-flex' : 'none';
+  $('dlAllBtn2').style.display = hasOk ? 'inline-flex' : 'none';
+}
+
+function fmtBadge(mime) {
+  const t = mime.replace('image/','').toUpperCase();
+  const cls = {WEBP:'b-webp',JPEG:'b-jpeg',JPG:'b-jpg',PNG:'b-png',AVIF:'b-avif'}[t] || '';
+  return `<span class="badge ${cls}">${t}</span>`;
+}
+
+function saveBadge(r) {
+  if (r.keptOrig) return `<span class="badge b-gray">Original Kept</span>`;
+  if (r.savedPct > 0.5) return `<span class="badge b-success">▼ ${r.savedPct.toFixed(1)}%</span>`;
+  if (r.savedPct < -0.5) return `<span class="badge b-danger">▲ ${Math.abs(r.savedPct).toFixed(1)}%</span>`;
+  return `<span class="badge b-gray">No Change</span>`;
+}
+
+function cardHTML(r) {
+  const qualPct = r.qualityUsed.match(/\d+/) ? parseInt(r.qualityUsed.match(/\d+/)[0]) : 80;
+  const barColor = qualPct > 70 ? 'var(--success)' : qualPct > 40 ? 'var(--warning)' : 'var(--danger)';
+  return `
+<div class="rcard">
+  <div class="ba-wrap" data-before="${r.origUrl}" data-after="${r.outUrl}">
+    <div class="ba-before"><img src="${r.origUrl}" alt="Original" loading="lazy"></div>
+    <div class="ba-after"><img src="${r.outUrl}" alt="Optimized" loading="lazy"></div>
+    <div class="ba-line"></div>
+    <div class="ba-handle">⟺</div>
+    <div class="ba-labels">
+      <span class="ba-lbl">Before</span>
+      <span class="ba-lbl">After</span>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="card-fname" title="${r.outName}">${r.outName}</div>
+    <div class="card-quality-bar"><div style="width:${Math.min(100,qualPct)}%;background:${barColor}" class="cqb-fill"></div></div>
+    <div class="card-stats">
+      <div class="cs"><div class="cs-lbl">Original</div><div class="cs-val">${fmtSize(r.origSize)}</div></div>
+      <div class="cs"><div class="cs-lbl">Optimized</div><div class="cs-val ${r.outSize < r.origSize ? 'g' : ''}">${fmtSize(r.outSize)}</div></div>
+      <div class="cs"><div class="cs-lbl">Saved</div><div class="cs-val ${r.savedPct > 0 ? 'g' : r.savedPct < 0 ? 'r' : ''}">${r.savedPct.toFixed(1)}%</div></div>
+    </div>
+    <div class="card-dims">
+      <span>${r.inW}×${r.inH}</span>
+      <span class="dims-sep">→</span>
+      <span style="color:var(--text2)">${r.outW}×${r.outH}</span>
+      <span style="margin-left:auto;display:flex;gap:4px">${fmtBadge(r.mimeType)} ${saveBadge(r)}</span>
+    </div>
+    <div class="card-acts">
+      <a href="${r.outUrl}" download="${r.outName}" class="btn btn-success btn-sm" style="flex:1">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Download
+      </a>
+      <button class="btn btn-ghost btn-sm" onclick="openCropForItem(${r.idx})" title="Crop this image">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M6.13 1L3 16h18L17.87 1z"></path><path d="M4 17h16"></path><path d="M8 22h8"></path></svg>
+      </button>
+      <button class="btn btn-danger btn-sm" onclick="deleteResult(${r.idx})" title="Remove">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+      </button>
+    </div>
+  </div>
+</div>`;
+}
+
+function errCardHTML(r) {
+  return `
+<div class="rcard err">
+  <div class="err-body">
+    <div class="err-ico">❌</div>
+    <div style="flex:1; min-width:0">
+      <div class="err-name">${r.origName}</div>
+      <div class="err-msg">${r.error}</div>
+      <div class="card-acts">
+        <button class="btn btn-ghost btn-sm" onclick="retryFile(${r.idx})">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+          Retry
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="deleteResult(${r.idx})">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+function deleteResult(idx) {
+  const r = S.processed.find(x => x.idx === idx);
+  if (r) {
+    if (r.outUrl) URL.revokeObjectURL(r.outUrl);
+    if (r.origUrl) URL.revokeObjectURL(r.origUrl);
+  }
+  S.processed = S.processed.filter(x => x.idx !== idx);
+  renderResults();
+  updateStats();
+  toast('Result removed', 'info');
+}
+
+async function retryFile(idx) {
+  const file = S.files[idx];
+  if (!file) return;
+  const settings = getSettings();
+  setLoading(true, 'Retrying...', file.name, 50, file.name);
+  try {
+    const result = await processFile(file, settings, idx);
+    S.processed = S.processed.filter(x => x.idx !== idx);
+    S.processed.push(result);
+    toast(`Retried: ${file.name}`, result.ok ? 'success' : 'error');
+  } catch(err) {
+    toast('Retry failed', 'error', err.message);
+  }
+  setLoading(false);
+  renderResults();
+  updateStats();
+}
+
+/* ================================================================
+   BEFORE / AFTER SLIDER
+================================================================ */
+function initBASlider(wrap) {
+  let dragging = false;
+  function setPos(x) {
+    const rect = wrap.getBoundingClientRect();
+    const pct = Math.max(2, Math.min(98, ((x - rect.left) / rect.width) * 100));
+    const after = wrap.querySelector('.ba-after');
+    const line = wrap.querySelector('.ba-line');
+    const handle = wrap.querySelector('.ba-handle');
+    const right = 100 - pct;
+    after.style.clipPath = `inset(0 ${right}% 0 0)`;
+    line.style.left = pct + '%';
+    handle.style.left = pct + '%';
+  }
+  wrap.addEventListener('mousedown', e => { dragging = true; setPos(e.clientX); e.preventDefault(); });
+  wrap.addEventListener('touchstart', e => { dragging = true; setPos(e.touches[0].clientX); }, {passive:true});
+  document.addEventListener('mousemove', e => { if (dragging) setPos(e.clientX); });
+  document.addEventListener('touchmove', e => { if (dragging) setPos(e.touches[0].clientX); }, {passive:true});
+  document.addEventListener('mouseup', () => dragging = false);
+  document.addEventListener('touchend', () => dragging = false);
+}
+
+/* ================================================================
+   DOWNLOAD
+================================================================ */
+function triggerDL(url, name) {
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+async function downloadZip() {
+  const ok = S.processed.filter(r => r.ok);
+  if (!ok.length) { toast('Nothing to download', 'warning', 'Process some images first'); return; }
+  if (typeof JSZip === 'undefined') { toast('JSZip not loaded', 'error', 'Check internet connection and reload'); return; }
+  setLoading(true, 'Creating ZIP', `Packing ${ok.length} files...`, 0);
+  try {
+    const zip = new JSZip();
+    for (let i = 0; i < ok.length; i++) {
+      const r = ok[i];
+      setLoading(true, 'Creating ZIP', `Adding ${r.outName}`, Math.round(i/ok.length*100));
+      const blob = await fetch(r.outUrl).then(x => x.blob());
+      zip.file(r.outName, blob);
+    }
+    const content = await zip.generateAsync({type:'blob', compression:'DEFLATE', compressionOptions:{level:6}});
+    const url = URL.createObjectURL(content);
+    triggerDL(url, `image_studio_${new Date().toISOString().slice(0,10)}.zip`);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    toast(`ZIP downloaded! ${ok.length} files`, 'success', `Total: ${fmtSize(ok.reduce((a,r)=>a+r.outSize,0))}`);
+  } catch(err) {
+    toast('ZIP failed', 'error', err.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+/* ================================================================
+   CLEAR
+================================================================ */
+function clearProcessed(resetFiles = false) {
+  S.processed.forEach(r => {
+    if (r.outUrl) URL.revokeObjectURL(r.outUrl);
+    if (r.origUrl) URL.revokeObjectURL(r.origUrl);
+  });
+  S.processed = [];
+}
+
+function clearAll() {
+  clearProcessed();
+  if (S.files.length) {
+    S.files = [];
+    S.cropData = [];
+    $('fileInput').value = '';
+    updateFileCountBadge();
+    updateCropFileList();
+  }
+  renderResults();
+  updateStats();
+  $('recompBtn').style.display = 'none';
+  $('dlAllBtn').style.display = 'none';
+  $('dlAllBtn2').style.display = 'none';
+  toast('Workspace cleared', 'info');
+}
+
+/* ================================================================
+   SOCIAL MEDIA PLATFORM UI
+================================================================ */
+function buildPlatformGrid() {
+  const grid = $('platformGrid');
+  grid.innerHTML = Object.entries(PLATFORMS).map(([key, plat]) => `
+    <div class="plat-card" data-key="${key}" onclick="selectPlatform('${key}')">
+      <div class="plat-logo" style="color:${plat.color}">${plat.logo}</div>
+      <div class="plat-name">${plat.name.split('/')[0].trim()}</div>
+      <div class="plat-cnt">${plat.presets.length} presets</div>
+    </div>`).join('');
+}
+
+function selectPlatform(key) {
+  S.activePlatform = key;
+  S.activePreset = null;
+  document.querySelectorAll('.plat-card').forEach(c => c.classList.toggle('on', c.dataset.key === key));
+  const plat = PLATFORMS[key];
+  $('presetSection').style.display = 'block';
+  $('presetLabel').textContent = `${plat.name} Presets`;
+  $('presetList').innerHTML = plat.presets.map((p,i) => `
+    <div class="preset-item" data-pidx="${i}" onclick="selectPreset('${key}',${i})">
+      <div class="preset-name">${p.name}</div>
+      <div class="preset-dim">${p.w} × ${p.h}</div>
+    </div>`).join('');
+  $('socialSelectedInfo').style.display = 'none';
+}
+
+function selectPreset(platformKey, presetIdx) {
+  const plat = PLATFORMS[platformKey];
+  const preset = plat.presets[presetIdx];
+  S.activePreset = {w: preset.w, h: preset.h, name: preset.name, platform: plat.name};
+
+  document.querySelectorAll('.preset-item').forEach(el => el.classList.remove('on'));
+  document.querySelector(`.preset-item[data-pidx="${presetIdx}"]`)?.classList.add('on');
+
+  $('socialSelectedInfo').style.display = 'block';
+  $('socialSelectedName').textContent = `${preset.name}`;
+  $('socialSelectedDim').textContent = `${preset.w} × ${preset.h} pixels`;
+
+  toast(`Preset selected: ${preset.name}`, 'info', `${preset.w}×${preset.h}px — Ready to apply`);
+}
+
+/* ================================================================
+   RESIZE PRESET
+================================================================ */
+function applyResizePreset() {
+  const v = $('resizePreset').value;
+  if (!v || v === 'custom') return;
+  const [w, h] = v.split('x');
+  $('resizeW').value = w;
+  $('resizeH').value = h;
+}
+
+function onResizeManual() {
+  $('resizePreset').value = 'custom';
+}
+
+/* ================================================================
+   FILTERS
+================================================================ */
+function updateFilterPrev() {
+  const map = {
+    fBrightness: v => v,
+    fContrast: v => v,
+    fSaturation: v => v,
+    fHue: v => v + '°',
+    fBlur: v => v + 'px',
+    fSharpen: v => v,
+  };
+  Object.entries(map).forEach(([id, fmt]) => {
+    const el = $(id);
+    $(id+'V').textContent = fmt(el.value);
+  });
+
+  const prev = $('filterPrev');
+  const img = prev.querySelector('img');
+  if (!img) return;
+  const filters = [];
+  if ($('fBrightness').value != 100) filters.push(`brightness(${$('fBrightness').value}%)`);
+  if ($('fContrast').value != 100) filters.push(`contrast(${$('fContrast').value}%)`);
+  if ($('fSaturation').value != 100) filters.push(`saturate(${$('fSaturation').value}%)`);
+  if ($('fHue').value != 0) filters.push(`hue-rotate(${$('fHue').value}deg)`);
+  if ($('fBlur').value != 0) filters.push(`blur(${$('fBlur').value}px)`);
+  if ($('fInvert').checked) filters.push(`invert(1)`);
+  img.style.filter = filters.join(' ');
+}
+
+function updateFilterPreview() {
+  const prev = $('filterPrev');
+  if (S.files.length > 0) {
+    const url = URL.createObjectURL(S.files[0]);
+    prev.innerHTML = `<img src="${url}" alt="Filter preview" style="width:100%;height:100%;object-fit:contain" onload="URL.revokeObjectURL(this.src)">`;
+    updateFilterPrev();
+  } else {
+    prev.innerHTML = '<div class="filter-prev-placeholder">🖼️</div>';
+  }
+}
+
+function applyFilterPreset(name) {
+  const presets = {
+    grayscale: {sat:0, br:100, con:100, hue:0, bl:0, sh:0, inv:false},
+    sepia:     {sat:40, br:105, con:95, hue:35, bl:0, sh:0, inv:false},
+    vivid:     {sat:200, br:105, con:120, hue:0, bl:0, sh:0, inv:false},
+    cool:      {sat:110, br:100, con:105, hue:-20, bl:0, sh:0, inv:false},
+    warm:      {sat:120, br:105, con:100, hue:20, bl:0, sh:0, inv:false},
+    reset:     {sat:100, br:100, con:100, hue:0, bl:0, sh:0, inv:false},
+  };
+  const p = presets[name];
+  if (!p) return;
+  $('fSaturation').value = p.sat;
+  $('fBrightness').value = p.br;
+  $('fContrast').value = p.con;
+  $('fHue').value = p.hue;
+  $('fBlur').value = p.bl;
+  $('fSharpen').value = p.sh;
+  $('fInvert').checked = p.inv;
+  updateFilterPrev();
+  toast(`${name.charAt(0).toUpperCase()+name.slice(1)} preset applied`, 'info');
+}
+
+/* ================================================================
+   WATERMARK
+================================================================ */
+function toggleWM() {
+  $('wmSettings').style.display = $('wmEnabled').checked ? 'block' : 'none';
+}
+
+function setWMPos(pos, btn) {
+  S.wmPos = pos;
+  document.querySelectorAll('.wm-pos-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+/* ================================================================
+   INTERACTIVE CROP TOOL
+================================================================ */
+const HANDLE_R = 12;
+
+function updateCropFileList() {
+  const list = $('cropFileList');
+  const btn = $('openCropBtn');
+  if (!S.files.length) { list.innerHTML = ''; btn.disabled = true; return; }
+  btn.disabled = false;
+  list.innerHTML = S.files.slice(0,3).map((f,i) =>
+    `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:var(--r);background:rgba(26,36,56,.5);border:1px solid var(--border)">
+      <span style="font-size:11px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px">${f.name}</span>
+      <button class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:10px" onclick="openCropForIdx(${i})">✂️ Crop</button>
+    </div>`).join('') + (S.files.length > 3 ? `<div style="font-size:11px;color:var(--text3);text-align:center;padding:5px 0">+${S.files.length-3} more files</div>` : '');
+}
+
+function openCropForFirst() { if (S.files.length) openCropForIdx(0); }
+function openCropForItem(idx) { openCropForIdx(idx); switchTab('resize', document.querySelector('.htab[data-tab="resize"]')); }
+function openCropForIdx(idx) {
+  const file = S.files[idx];
+  if (!file) return;
+  cropState.fileIdx = idx;
+  cropState.file = file;
+  cropState.ar = null;
+  document.querySelectorAll('.ar-btn').forEach(b => b.classList.remove('on'));
+  document.querySelector('.ar-btn[data-ar="free"]')?.classList.add('on');
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      cropState.img = img;
+      initCropCanvas(img);
+      $('cropModal').classList.add('on');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function initCropCanvas(img) {
+  const canvas = $('cropCanvas');
+  const area = canvas.parentElement;
+  const maxW = area.clientWidth - 40;
+  const maxH = Math.min(area.clientHeight - 40, window.innerHeight * 0.55);
+  const scale = Math.min(1, maxW / img.width, maxH / img.height);
+  cropState.cScale = scale;
+  canvas.width = Math.round(img.width * scale);
+  canvas.height = Math.round(img.height * scale);
+
+  const existing = S.cropData[cropState.fileIdx];
+  if (existing) {
+    cropState.rect = {
+      x: Math.round(existing.x * scale),
+      y: Math.round(existing.y * scale),
+      w: Math.round(existing.w * scale),
+      h: Math.round(existing.h * scale),
+    };
+  } else {
+    cropState.rect = {x:0, y:0, w:canvas.width, h:canvas.height};
+  }
+  drawCropCanvas();
+}
+
+function drawCropCanvas() {
+  const canvas = $('cropCanvas');
+  const ctx = canvas.getContext('2d');
+  const {img, rect} = cropState;
+  if (!img) return;
+  const {x,y,w,h} = rect;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(img,0,0,canvas.width,canvas.height);
+
+  ctx.fillStyle = 'rgba(0,0,0,0.58)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x,y,w,h);
+  ctx.clip();
+  ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  ctx.restore();
+
+  ctx.strokeStyle = '#6366f1';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x+1,y+1,w-2,h-2);
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4,4]);
+  ctx.beginPath();
+  ctx.moveTo(x+w/3,y); ctx.lineTo(x+w/3,y+h);
+  ctx.moveTo(x+2*w/3,y); ctx.lineTo(x+2*w/3,y+h);
+  ctx.moveTo(x,y+h/3); ctx.lineTo(x+w,y+h/3);
+  ctx.moveTo(x,y+2*h/3); ctx.lineTo(x+w,y+2*h/3);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  const handles = cropHandles(rect);
+  handles.forEach(({x:hx,y:hy}) => {
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = '#6366f1';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(hx,hy,5,0,Math.PI*2);
+    ctx.fill();
+    ctx.stroke();
+  });
+
+  const imgW = Math.round(w/cropState.cScale);
+  const imgH = Math.round(h/cropState.cScale);
+  const label = `${imgW} × ${imgH} px`;
+  ctx.font = 'bold 12px Inter,sans-serif';
+  const tw = ctx.measureText(label).width;
+  const lx = x + w/2 - tw/2 - 7;
+  const ly = y + h - 26;
+  if (ly > y+10) {
+    ctx.fillStyle = 'rgba(99,102,241,.85)';
+    ctx.beginPath();
+    ctx.roundRect(lx, ly, tw+14, 20, 5);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, x+w/2, ly+10);
+    ctx.textAlign = 'start';
+    ctx.textBaseline = 'alphabetic';
+  }
+
+  $('cropDimInfo').textContent = label;
+  $('cropInfo').textContent = `${imgW} × ${imgH} px — Drag corners to customize crop`;
+  updateCropInputs();
+}
+
+function cropHandles(r) {
+  return [
+    {id:'nw',x:r.x,y:r.y},
+    {id:'n', x:r.x+r.w/2,y:r.y},
+    {id:'ne',x:r.x+r.w,y:r.y},
+    {id:'e', x:r.x+r.w,y:r.y+r.h/2},
+    {id:'se',x:r.x+r.w,y:r.y+r.h},
+    {id:'s', x:r.x+r.w/2,y:r.y+r.h},
+    {id:'sw',x:r.x,y:r.y+r.h},
+    {id:'w', x:r.x,y:r.y+r.h/2},
+  ];
+}
+
+function hitTest(x, y, rect) {
+  for (const h of cropHandles(rect)) {
+    if (Math.abs(x-h.x) <= HANDLE_R && Math.abs(y-h.y) <= HANDLE_R) return h.id;
+  }
+  if (x>=rect.x && x<=rect.x+rect.w && y>=rect.y && y<=rect.y+rect.h) return 'move';
+  return 'new';
+}
+
+function getCanvasPos(canvas, e) {
+  const r = canvas.getBoundingClientRect();
+  const src = e.touches ? e.touches[0] : e;
+  return {
+    x: (src.clientX - r.left) * (canvas.width / r.width),
+    y: (src.clientY - r.top) * (canvas.height / r.height),
+  };
+}
+
+function constrainRect(r, canvas) {
+  let {x,y,w,h} = r;
+  w = Math.max(10, w);
+  h = Math.max(10, h);
+  x = clamp(x, 0, canvas.width - w);
+  y = clamp(y, 0, canvas.height - h);
+  return {x,y,w,h};
+}
+
+function applyAR(rect, canvas) {
+  const ar = cropState.ar;
+  if (!ar) return rect;
+  const newH = Math.round(rect.w * ar.h / ar.w);
+  const clamped = constrainRect({...rect, h:newH}, canvas);
+  if (clamped.h < 10) { const newW = Math.round(rect.h * ar.w / ar.h); return constrainRect({...rect, w:newW}, canvas); }
+  return clamped;
+}
+
+const cropCanvas = $('cropCanvas');
+cropCanvas.addEventListener('mousedown', onCropDown);
+cropCanvas.addEventListener('touchstart', onCropDown, {passive:false});
+document.addEventListener('mousemove', onCropMove);
+document.addEventListener('touchmove', onCropMove, {passive:false});
+document.addEventListener('mouseup', onCropUp);
+document.addEventListener('touchend', onCropUp);
+
+function onCropDown(e) {
+  if (!$('cropModal').classList.contains('on')) return;
+  e.preventDefault();
+  const p = getCanvasPos($('cropCanvas'), e);
+  const type = hitTest(p.x, p.y, cropState.rect);
+  cropState.drag = {on:true, type, sx:p.x, sy:p.y, sr:{...cropState.rect}};
+  if (type === 'new') {
+    cropState.rect = {x:p.x, y:p.y, w:1, h:1};
+    cropState.drag.type = 'se';
+    cropState.drag.sr = {x:p.x, y:p.y, w:1, h:1};
+  }
+}
+
+function onCropMove(e) {
+  if (!cropState.drag.on) return;
+  e.preventDefault();
+  const canvas = $('cropCanvas');
+  const p = getCanvasPos(canvas, e);
+  const {type, sx, sy, sr} = cropState.drag;
+  const dx = p.x - sx, dy = p.y - sy;
+  let r = {...sr};
+
+  if (type === 'move') { r.x = sr.x+dx; r.y = sr.y+dy; }
+  else if (type === 'se') { r.w = sr.w+dx; r.h = sr.h+dy; }
+  else if (type === 'nw') { r.x = sr.x+dx; r.y = sr.y+dy; r.w = sr.w-dx; r.h = sr.h-dy; }
+  else if (type === 'ne') { r.y = sr.y+dy; r.w = sr.w+dx; r.h = sr.h-dy; }
+  else if (type === 'sw') { r.x = sr.x+dx; r.w = sr.w-dx; r.h = sr.h+dy; }
+  else if (type === 'n') { r.y = sr.y+dy; r.h = sr.h-dy; }
+  else if (type === 's') { r.h = sr.h+dy; }
+  else if (type === 'e') { r.w = sr.w+dx; }
+  else if (type === 'w') { r.x = sr.x+dx; r.w = sr.w-dx; }
+
+  r = constrainRect(r, canvas);
+  r = applyAR(r, canvas);
+  cropState.rect = r;
+  drawCropCanvas();
+}
+
+function onCropUp() { cropState.drag.on = false; }
+
+function updateCropInputs() {
+  const s = cropState.cScale;
+  const r = cropState.rect;
+  $('cX').value = Math.round(r.x/s);
+  $('cY').value = Math.round(r.y/s);
+  $('cW').value = Math.round(r.w/s);
+  $('cH').value = Math.round(r.h/s);
+}
+
+function syncCropFromInputs() {
+  const s = cropState.cScale;
+  const x = (parseInt($('cX').value)||0) * s;
+  const y = (parseInt($('cY').value)||0) * s;
+  const w = (parseInt($('cW').value)||1) * s;
+  const h = (parseInt($('cH').value)||1) * s;
+  cropState.rect = constrainRect({x,y,w,h}, $('cropCanvas'));
+  drawCropCanvas();
+}
+
+function setAR(ar, btn) {
+  document.querySelectorAll('.ar-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  if (ar === 'free') { cropState.ar = null; return; }
+  const [wa,ha] = ar.split(':').map(Number);
+  cropState.ar = {w:wa, h:ha};
+  cropState.rect = applyAR(cropState.rect, $('cropCanvas'));
+  drawCropCanvas();
+}
+
+function cropCenterSquare() {
+  const canvas = $('cropCanvas');
+  const side = Math.min(canvas.width, canvas.height);
+  cropState.rect = constrainRect({x:(canvas.width-side)/2, y:(canvas.height-side)/2, w:side, h:side}, canvas);
+  drawCropCanvas();
+}
+
+function cropCenterWide() {
+  const canvas = $('cropCanvas');
+  const w = canvas.width, h = Math.round(w*9/16);
+  cropState.rect = constrainRect({x:0, y:(canvas.height-h)/2, w, h}, canvas);
+  drawCropCanvas();
+}
+
+function cropSelectAll() {
+  const canvas = $('cropCanvas');
+  cropState.rect = {x:0, y:0, w:canvas.width, h:canvas.height};
+  cropState.ar = null;
+  document.querySelectorAll('.ar-btn').forEach(b => b.classList.remove('on'));
+  document.querySelector('.ar-btn[data-ar="free"]')?.classList.add('on');
+  drawCropCanvas();
+}
+
+function applyCrop() {
+  const s = cropState.cScale;
+  const r = cropState.rect;
+  const cropInPx = {
+    x: Math.round(r.x / s),
+    y: Math.round(r.y / s),
+    w: Math.round(r.w / s),
+    h: Math.round(r.h / s),
+  };
+  S.cropData[cropState.fileIdx] = cropInPx;
+  toast(`Crop configured: ${cropInPx.w}×${cropInPx.h}px`, 'success', 'Ready to process');
+  closeCropModal();
+  updateCropFileList();
+}
+
+function closeCropModal() {
+  $('cropModal').classList.remove('on');
+  cropState.img = null;
+  cropState.file = null;
+}
+
+/* ================================================================
+   SETTINGS SYNC
+================================================================ */
+function syncQuality() {
+  $('qualityVal').textContent = $('qualitySlider').value + '%';
+}
+
+$('bgColor').addEventListener('input', () => {
+  $('bgColorHex').textContent = $('bgColor').value;
+});
+
+/* ================================================================
+   INIT UI
+================================================================ */
+function init() {
+  $('footYear').textContent = new Date().getFullYear();
+  buildPlatformGrid();
+  updateStats();
+  syncQuality();
+  
+  // Close mobile drawer when clicking main content
+  document.querySelector('.main').addEventListener('click', () => {
+    if (window.innerWidth <= 900) {
+      $('sidebar').classList.add('collapsed');
+    }
+  });
+
+  toast('Image Studio Pro Ready! 🚀', 'success', 'Drag and drop or browse to load files');
+}
+
+init();
+</script>
+</body>
+</html>

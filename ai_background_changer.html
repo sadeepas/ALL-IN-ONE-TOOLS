@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self'; worker-src 'self' blob:;">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <script src="security.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Background Studio | Instant BG Replacer & Generator</title>
+
+    <!-- Web Icon / Favicon -->
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/8633/8633190.png" type="image/png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            accent: '#a855f7',
+                            cyan: '#06b6d4',
+                        },
+                        darkbg: '#080c14',
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 6s ease-in-out infinite alternate',
+                        'scan-line': 'scanLine 2.5s ease-in-out infinite alternate',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%': { opacity: 0.3, transform: 'scale(1)' },
+                            '100%': { opacity: 0.7, transform: 'scale(1.1)' },
+                        },
+                        scanLine: {
+                            '0%': { top: '0%' },
+                            '100%': { top: '98%' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-8px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #080c14;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, .font-heading {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Ambient Glow Backgrounds */
+        .ambient-glow-1 {
+            position: fixed; top: -10%; left: 10%; width: 550px; height: 550px;
+            background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%; pointer-events: none; z-index: 0;
+        }
+        .ambient-glow-2 {
+            position: fixed; bottom: -10%; right: 10%; width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(168,85,247,0.16) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%; pointer-events: none; z-index: 0;
+        }
+
+        /* Glassmorphism Panels */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-button {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-button:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.22);
+            transform: translateY(-1px);
+        }
+        .glass-button.active {
+            background: linear-gradient(135deg, rgba(99,102,241,0.85), rgba(168,85,247,0.85));
+            border-color: rgba(255, 255, 255, 0.35);
+            box-shadow: 0 0 16px rgba(99,102,241,0.4);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.4); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.6); }
+
+        /* Transparent Checkerboard Background */
+        .bg-checkerboard {
+            background-color: #0f172a;
+            background-image: linear-gradient(45deg, #1e293b 25%, transparent 25%), 
+                              linear-gradient(-45deg, #1e293b 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #1e293b 75%), 
+                              linear-gradient(-45deg, transparent 75%, #1e293b 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+        }
+
+        #drop-zone.dragover {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: #818cf8;
+            transform: scale(1.01);
+        }
+
+        /* Before/After Split Curtain */
+        .ba-wrapper {
+            position: relative; overflow: hidden; user-select: none; display: inline-block;
+        }
+        .ba-after-layer {
+            position: absolute; top: 0; left: 0; height: 100%; overflow: hidden;
+            border-right: 2px solid #38bdf8; box-shadow: 4px 0 12px rgba(0,0,0,0.5);
+        }
+        .ba-slider-handle {
+            position: absolute; top: 0; bottom: 0; width: 4px; background: #ffffff; cursor: ew-resize; z-index: 40;
+        }
+        .ba-handle-btn {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 34px; height: 34px; background: #4f46e5; border: 2px solid #ffffff;
+            border-radius: 50%; display: flex; items-center; justify-content: center;
+            box-shadow: 0 0 12px rgba(0,0,0,0.6); color: white; font-size: 11px;
+        }
+    </style>
+
+  <!-- XSS Protection: Safe escaping utility -->
+  <script>
+    // Global safe text utility - use this instead of innerHTML for user data
+    window.safeText = function(str) {
+      const d = document.createElement('div');
+      d.textContent = String(str || '');
+      return d.innerHTML;
+    };
+  </script>
+</head>
+<body class="h-screen w-screen flex flex-col relative select-none">
+
+    <!-- Ambient Background Lighting -->
+    <div class="ambient-glow-1 animate-pulse-glow"></div>
+    <div class="ambient-glow-2 animate-pulse-glow"></div>
+
+    <!-- Header Navbar -->
+    <header class="glass-panel mx-4 mt-3 px-6 py-3 rounded-2xl flex items-center justify-between z-20 relative border-b border-white/10">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <i class="fa-solid fa-wand-magic-sparkles text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold font-heading tracking-wide flex items-center gap-2">
+                    AI Studio <span class="bg-indigo-500/20 text-indigo-300 text-xs px-2 py-0.5 rounded-full border border-indigo-500/30">BG REPLACER</span>
+                </h1>
+                <p class="text-xs text-slate-400 hidden sm:block">Instant Client-Side & AI Background Compositing Suite</p>
+            </div>
+        </div>
+
+        <!-- Header Actions -->
+        <div class="flex items-center gap-2 sm:gap-3">
+            <!-- Sample Models Gallery Button -->
+            <button onclick="openSampleModal()" class="glass-button px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-2 text-slate-200">
+                <i class="fa-solid fa-user-astronaut text-purple-400"></i>
+                <span>Try Demo Photos</span>
+            </button>
+
+            <!-- Export Dropdown -->
+            <div class="relative group">
+                <button class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 transition-all px-4 py-1.5 rounded-xl text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-500/25 flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Export</span>
+                    <i class="fa-solid fa-chevron-down text-xs ml-1 opacity-70"></i>
+                </button>
+                <div class="absolute right-0 top-full mt-2 w-48 glass-panel rounded-xl p-2 hidden group-hover:block border border-slate-700 shadow-2xl z-50">
+                    <button onclick="exportImage('png')" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-indigo-500/20 text-slate-200 flex items-center justify-between">
+                        <span>Download PNG</span> <span class="text-[10px] text-emerald-400">Transparent</span>
+                    </button>
+                    <button onclick="exportImage('jpg')" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-indigo-500/20 text-slate-200 flex items-center justify-between">
+                        <span>Download JPG</span> <span class="text-[10px] text-slate-400">High Quality</span>
+                    </button>
+                    <button onclick="exportImage('webp')" class="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-indigo-500/20 text-slate-200 flex items-center justify-between">
+                        <span>Download WebP</span> <span class="text-[10px] text-slate-400">Fast Web</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <main class="flex-1 flex flex-col lg:flex-row gap-4 p-4 overflow-hidden z-10 relative">
+
+        <!-- Left Controls & Background Studio Sidebar -->
+        <aside class="glass-panel w-full lg:w-96 rounded-2xl flex flex-col overflow-hidden border border-white/10 shrink-0">
+            
+            <!-- Sidebar Navigation Tabs -->
+            <div class="p-2 bg-slate-950/50 border-b border-white/10 flex gap-1">
+                <button id="tab-presets" onclick="switchStudioTab('presets')" class="flex-1 py-2 rounded-xl text-xs font-semibold glass-button active flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-images text-indigo-400"></i> Wallpapers
+                </button>
+                <button id="tab-gradients" onclick="switchStudioTab('gradients')" class="flex-1 py-2 rounded-xl text-xs font-semibold glass-button flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-palette text-pink-400"></i> Colors
+                </button>
+                <button id="tab-ai" onclick="switchStudioTab('ai')" class="flex-1 py-2 rounded-xl text-xs font-semibold glass-button flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-wand-sparkles text-cyan-400"></i> AI Prompt
+                </button>
+            </div>
+
+            <!-- Upload Area Section -->
+            <div class="p-4 border-b border-white/10">
+                <input type="file" id="image-upload" accept="image/*" class="hidden">
+                <div id="drop-zone" onclick="document.getElementById('image-upload').click()"
+                     class="border-2 border-dashed border-slate-700 hover:border-indigo-400 rounded-xl p-4 text-center cursor-pointer transition-all duration-300 bg-slate-900/40 hover:bg-indigo-950/20 group">
+                    <div class="flex items-center justify-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-500/10 group-hover:bg-indigo-500/20 flex items-center justify-center text-indigo-400 transition-all">
+                            <i class="fa-solid fa-cloud-arrow-up text-lg group-hover:scale-110 transition-transform"></i>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-xs font-semibold text-slate-200">Click or Drag Subject Image</p>
+                            <p class="text-[11px] text-slate-400">PNG, JPG, WEBP up to 15MB</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scrollable Tab Content Container -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4">
+
+                <!-- TAB 1: PRESET WALLPAPERS -->
+                <div id="panel-presets" class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-border-all text-indigo-400"></i> Preset Wallpaper Scenes
+                        </span>
+                        <label class="glass-button text-[10px] px-2 py-1 rounded-lg cursor-pointer text-indigo-300">
+                            <i class="fa-solid fa-plus mr-1"></i> Upload Custom BG
+                            <input type="file" id="custom-bg-upload" accept="image/*" class="hidden">
+                        </label>
+                    </div>
+
+                    <!-- Wallpapers Grid -->
+                    <div class="grid grid-cols-3 gap-2.5">
+                        <!-- Preset 1: Studio Light -->
+                        <div onclick="setWallpaper('studio')" class="group cursor-pointer rounded-xl overflow-hidden border border-slate-700 hover:border-indigo-400 transition-all bg-slate-900 p-1">
+                            <div class="h-16 rounded-lg bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950 flex items-center justify-center">
+                                <i class="fa-solid fa-lightbulb text-slate-400 text-xs"></i>
+                            </div>
+                            <p class="text-[10px] font-medium text-center text-slate-300 mt-1 truncate">Studio Soft</p>
+                        </div>
+
+                        <!-- Preset 2: Cyberpunk City -->
+                        <div onclick="setWallpaper('neon')" class="group cursor-pointer rounded-xl overflow-hidden border border-slate-700 hover:border-indigo-400 transition-all bg-slate-900 p-1">
+                            <div class="h-16 rounded-lg bg-gradient-to-br from-indigo-900 via-purple-900 to-cyan-900 flex items-center justify-center">
+                                <i class="fa-solid fa-city text-cyan-300 text-xs"></i>
+                            </div>
+                            <p class="text-[10px] font-medium text-center text-slate-300 mt-1 truncate">Cyber Neon</p>
+                        </div>
+
+                        <!-- Preset 3: Sunset Beach -->
+                        <div onclick="setWallpaper('sunset')" class="group cursor-pointer rounded-xl overflow-hidden border border-slate-700 hover:border-indigo-400 transition-all bg-slate-900 p-1">
+                            <div class="h-16 rounded-lg bg-gradient-to-br from-orange-600 via-pink-600 to-purple-900 flex items-center justify-center">
+                                <i class="fa-solid fa-sun text-amber-300 text-xs"></i>
+                            </div>
+                            <p class="text-[10px] font-medium text-center text-slate-300 mt-1 truncate">Sunset Beach</p>
+                        </div>
+
+                        <!-- Preset 4: Luxury Penthouse -->
+                        <div onclick="setWallpaper('luxury')" class="group cursor-pointer rounded-xl overflow-hidden border border-slate-700 hover:border-indigo-400 transition-all bg-slate-900 p-1">
+                            <div class="h-16 rounded-lg bg-gradient-to-br from-amber-900 via-stone-800 to-slate-950 flex items-center justify-center">
+                                <i class="fa-solid fa-building text-amber-400 text-xs"></i>
+                            </div>
+                            <p class="text-[10px] font-medium text-center text-slate-300 mt-1 truncate">Penthouse</p>
+                        </div>
+
+                        <!-- Preset 5: Cozy Cafe -->
+                        <div onclick="setWallpaper('cafe')" class="group cursor-pointer rounded-xl overflow-hidden border border-slate-700 hover:border-indigo-400 transition-all bg-slate-900 p-1">
+                            <div class="h-16 rounded-lg bg-gradient-to-br from-amber-800 via-yellow-900 to-stone-900 flex items-center justify-center">
+                                <i class="fa-solid fa-mug-hot text-amber-200 text-xs"></i>
+                            </div>
+                            <p class="text-[10px] font-medium text-center text-slate-300 mt-1 truncate">Cozy Cafe</p>
+                        </div>
+
+                        <!-- Preset 6: Bokeh Lights -->
+                        <div onclick="setWallpaper('bokeh')" class="group cursor-pointer rounded-xl overflow-hidden border border-slate-700 hover:border-indigo-400 transition-all bg-slate-900 p-1">
+                            <div class="h-16 rounded-lg bg-gradient-to-br from-pink-900 via-purple-950 to-indigo-950 flex items-center justify-center">
+                                <i class="fa-solid fa-circle-nodes text-pink-300 text-xs"></i>
+                            </div>
+                            <p class="text-[10px] font-medium text-center text-slate-300 mt-1 truncate">Bokeh Lights</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: SOLID COLORS & GRADIENTS -->
+                <div id="panel-gradients" class="space-y-4 hidden">
+                    <div>
+                        <span class="text-xs font-semibold text-slate-300 block mb-2">Preset Gradients</span>
+                        <div class="grid grid-cols-4 gap-2">
+                            <div onclick="setGradient('#6366f1', '#a855f7')" class="h-10 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 cursor-pointer border border-white/20 hover:scale-105 transition-transform"></div>
+                            <div onclick="setGradient('#06b6d4', '#3b82f6')" class="h-10 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 cursor-pointer border border-white/20 hover:scale-105 transition-transform"></div>
+                            <div onclick="setGradient('#ec4899', '#f43f5e')" class="h-10 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 cursor-pointer border border-white/20 hover:scale-105 transition-transform"></div>
+                            <div onclick="setGradient('#f59e0b', '#ef4444')" class="h-10 rounded-xl bg-gradient-to-r from-amber-500 to-red-500 cursor-pointer border border-white/20 hover:scale-105 transition-transform"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="text-xs font-semibold text-slate-300 block mb-2">Solid Studio Colors</span>
+                        <div class="grid grid-cols-5 gap-2">
+                            <button onclick="setSolidColor('transparent')" class="h-9 rounded-lg bg-checkerboard border border-slate-700 text-[10px] text-slate-300 font-semibold" title="Transparent PNG">PNG</button>
+                            <button onclick="setSolidColor('#ffffff')" class="h-9 rounded-lg bg-white border border-slate-700" title="Studio White"></button>
+                            <button onclick="setSolidColor('#64748b')" class="h-9 rounded-lg bg-slate-500 border border-slate-700" title="Studio Gray"></button>
+                            <button onclick="setSolidColor('#00ff00')" class="h-9 rounded-lg bg-green-500 border border-slate-700" title="Green Screen"></button>
+                            <button onclick="setSolidColor('#000000')" class="h-9 rounded-lg bg-black border border-slate-700" title="Deep Black"></button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Dual Color Picker -->
+                    <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 space-y-2">
+                        <span class="text-xs font-semibold text-slate-300">Custom Gradient Picker</span>
+                        <div class="flex items-center gap-3">
+                            <input type="color" id="grad-color-1" value="#6366f1" onchange="applyCustomGradient()" class="w-8 h-8 rounded border-0 cursor-pointer bg-transparent">
+                            <span class="text-xs text-slate-400">to</span>
+                            <input type="color" id="grad-color-2" value="#06b6d4" onchange="applyCustomGradient()" class="w-8 h-8 rounded border-0 cursor-pointer bg-transparent">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: AI PROMPT GENERATOR -->
+                <div id="panel-ai" class="space-y-3 hidden">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Describe AI Scene Prompt</label>
+                        <textarea id="ai-prompt-input" rows="3" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500" placeholder="e.g. A futuristic neon cyberpunk street in Tokyo at night with rain reflections"></textarea>
+                    </div>
+
+                    <!-- Quick Prompt Chips -->
+                    <div class="flex flex-wrap gap-1.5">
+                        <span onclick="setPromptChip('Luxury marble interior with soft warm lighting')" class="glass-button text-[10px] px-2 py-1 rounded-lg text-slate-300 cursor-pointer">Marble Luxury</span>
+                        <span onclick="setPromptChip('Tropical palm beach during golden hour sunset')" class="glass-button text-[10px] px-2 py-1 rounded-lg text-slate-300 cursor-pointer">Tropical Sunset</span>
+                        <span onclick="setPromptChip('Minimalist modern studio gradient with geometric shapes')" class="glass-button text-[10px] px-2 py-1 rounded-lg text-slate-300 cursor-pointer">Minimalist Studio</span>
+                    </div>
+
+                    <button onclick="generateAIBackground()" id="ai-generate-btn" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold text-xs shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+                        <span>Generate AI Scene</span>
+                    </button>
+                </div>
+
+                <!-- SUBJECT FINE-TUNING SUITE (Always Accessible) -->
+                <div class="pt-3 border-t border-white/10 space-y-3">
+                    <span class="text-xs font-bold font-heading text-slate-200 flex items-center gap-1.5">
+                        <i class="fa-solid fa-sliders text-indigo-400"></i> Subject Fine-Tuning
+                    </span>
+
+                    <!-- Background Bokeh Blur Slider -->
+                    <div>
+                        <div class="flex justify-between text-[11px] text-slate-300 mb-1">
+                            <span>Background Bokeh Blur</span>
+                            <span id="blur-val" class="font-mono text-indigo-300">0px</span>
+                        </div>
+                        <input type="range" id="slider-blur" min="0" max="30" value="0" oninput="updateCompositing()" class="w-full accent-indigo-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer">
+                    </div>
+
+                    <!-- Subject Lighting Brightness -->
+                    <div>
+                        <div class="flex justify-between text-[11px] text-slate-300 mb-1">
+                            <span>Subject Brightness</span>
+                            <span id="bright-val" class="font-mono text-indigo-300">100%</span>
+                        </div>
+                        <input type="range" id="slider-bright" min="50" max="150" value="100" oninput="updateCompositing()" class="w-full accent-indigo-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer">
+                    </div>
+
+                    <!-- Cutout Feathering -->
+                    <div>
+                        <div class="flex justify-between text-[11px] text-slate-300 mb-1">
+                            <span>Cutout Edge Feather</span>
+                            <span id="feather-val" class="font-mono text-indigo-300">2px</span>
+                        </div>
+                        <input type="range" id="slider-feather" min="0" max="10" value="2" oninput="updateCompositing()" class="w-full accent-indigo-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer">
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+        <!-- Right Studio Canvas & Editing Suite -->
+        <section class="glass-panel flex-1 rounded-2xl flex flex-col overflow-hidden border border-white/10 relative">
+            
+            <!-- Canvas Toolbar Controls -->
+            <div class="p-3 border-b border-white/10 flex items-center justify-between bg-slate-950/40">
+                <div class="flex items-center gap-2">
+                    <span id="status-badge" class="bg-indigo-500/20 text-indigo-300 text-xs px-2.5 py-1 rounded-lg border border-indigo-500/30 flex items-center gap-1.5 font-medium">
+                        <i class="fa-solid fa-circle text-[8px] text-emerald-400 animate-pulse"></i> Studio Canvas Ready
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <!-- Compare Toggle Button -->
+                    <button id="compare-btn" onclick="toggleBeforeAfter()" class="glass-button px-3 py-1.5 rounded-xl text-xs text-cyan-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>Compare Before/After</span>
+                    </button>
+                    <!-- Reset Button -->
+                    <button onclick="resetWorkspace()" class="glass-button px-3 py-1.5 rounded-xl text-xs text-rose-300 hover:text-rose-200">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Canvas Viewport -->
+            <div id="canvas-viewport" class="flex-1 flex items-center justify-center bg-slate-950/60 p-4 relative overflow-hidden bg-checkerboard">
+                
+                <!-- Blank Canvas Placeholder -->
+                <div id="canvas-placeholder" class="flex flex-col items-center justify-center text-slate-500 select-none pointer-events-none p-6 text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center mb-3 text-indigo-400 animate-float">
+                        <i class="fa-solid fa-image text-3xl"></i>
+                    </div>
+                    <p class="text-sm font-medium text-slate-300">No Image Loaded in Studio</p>
+                    <p class="text-xs text-slate-400 mt-1 max-w-sm">Upload a photo, or click <button onclick="openSampleModal()" class="text-indigo-400 underline pointer-events-auto">Try Demo Photos</button> to test immediately.</p>
+                </div>
+
+                <!-- Main Canvas Element -->
+                <canvas id="studio-canvas" class="hidden rounded-xl border border-slate-700 shadow-2xl max-h-[75vh] max-w-full object-contain"></canvas>
+
+                <!-- Processing Spinner Overlay -->
+                <div id="processing-loader" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center z-40">
+                    <div class="w-14 h-14 rounded-full border-4 border-indigo-500/20 border-t-indigo-400 animate-spin mb-3"></div>
+                    <p id="loader-status" class="text-xs font-semibold text-indigo-300">Processing background compositing...</p>
+                </div>
+
+                <!-- Before/After Split Comparison Overlay -->
+                <div id="ba-comparison-box" class="hidden absolute inset-0 bg-slate-950/90 flex items-center justify-center p-4 z-30">
+                    <div class="relative flex flex-col items-center max-w-full max-h-full">
+                        <div class="text-xs text-slate-300 mb-2 flex items-center justify-between w-full px-2">
+                            <span class="text-slate-400"><i class="fa-solid fa-arrow-left"></i> Original Photo</span>
+                            <span class="font-bold text-indigo-400">Before vs After Comparison</span>
+                            <span class="text-indigo-300">New Background <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+
+                        <div id="ba-split-container" class="ba-wrapper rounded-xl border border-slate-700 shadow-2xl">
+                            <img id="ba-original-img" src="" class="block max-h-[70vh] object-contain pointer-events-none">
+                            <div id="ba-after-layer" class="ba-after-layer" style="width: 50%;">
+                                <img id="ba-cleaned-img" src="" class="block max-h-[70vh] object-contain pointer-events-none">
+                            </div>
+                            <div id="ba-slider-handle" class="ba-slider-handle" style="left: 50%;">
+                                <div class="ba-handle-btn"><i class="fa-solid fa-left-right"></i></div>
+                            </div>
+                        </div>
+
+                        <button onclick="toggleBeforeAfter()" class="mt-3 glass-button px-4 py-1.5 rounded-xl text-xs text-slate-300">
+                            <i class="fa-solid fa-xmark mr-1"></i> Close Comparison
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Preset Demo Photos Modal -->
+    <div id="sample-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
+        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 border border-indigo-500/30 shadow-2xl relative">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-700 pb-3">
+                <h3 class="text-lg font-bold font-heading text-white flex items-center gap-2">
+                    <i class="fa-solid fa-user-astronaut text-purple-400"></i> Demo Subject Photos
+                </h3>
+                <button onclick="closeSampleModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-300 mb-4">Click any sample subject photo to test instant background replacement:</p>
+
+            <div class="grid grid-cols-3 gap-3">
+                <!-- Sample 1: Portrait Model -->
+                <div onclick="loadDemoSample('model')" class="group cursor-pointer rounded-xl overflow-hidden border border-slate-700 hover:border-indigo-400 transition-all bg-slate-900 p-2 text-center">
+                    <canvas id="sample-canvas-1" width="120" height="120" class="w-full h-24 object-cover rounded-lg bg-slate-800 mb-2"></canvas>
+                    <p class="text-xs font-semibold text-slate-200 group-hover:text-indigo-400 transition-colors">Model Portrait</p>
+                </div>
+
+                <!-- Sample 2: Product Item -->
+                <div onclick="loadDemoSample('product')" class="group cursor-pointer rounded-xl overflow-hidden border border-slate-700 hover:border-indigo-400 transition-all bg-slate-900 p-2 text-center">
+                    <canvas id="sample-canvas-2" width="120" height="120" class="w-full h-24 object-cover rounded-lg bg-slate-800 mb-2"></canvas>
+                    <p class="text-xs font-semibold text-slate-200 group-hover:text-indigo-400 transition-colors">Product Item</p>
+                </div>
+
+                <!-- Sample 3: Automobile -->
+                <div onclick="loadDemoSample('car')" class="group cursor-pointer rounded-xl overflow-hidden border border-slate-700 hover:border-indigo-400 transition-all bg-slate-900 p-2 text-center">
+                    <canvas id="sample-canvas-3" width="120" height="120" class="w-full h-24 object-cover rounded-lg bg-slate-800 mb-2"></canvas>
+                    <p class="text-xs font-semibold text-slate-200 group-hover:text-indigo-400 transition-colors">Sports Car</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- State Management ---
+        let mainCanvas, ctx;
+        let originalSubjectImg = null;
+        let currentBackground = { type: 'solid', val1: 'transparent', val2: null }; // 'solid', 'gradient', 'wallpaper', 'image'
+        let bgWallpaperImg = null;
+
+        // --- Window Onload ---
+        window.onload = () => {
+            mainCanvas = document.getElementById('studio-canvas');
+            ctx = mainCanvas.getContext('2d');
+
+            setupEventListeners();
+            generateSamplePreviews();
+            setupBeforeAfterSlider();
+        };
+
+        // --- Event Listeners Setup ---
+        function setupEventListeners() {
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('image-upload');
+            const customBgInput = document.getElementById('custom-bg-upload');
+
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                if (e.dataTransfer.files.length > 0) handleSubjectFile(e.dataTransfer.files[0]);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) handleSubjectFile(e.target.files[0]);
+            });
+
+            customBgInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    const reader = new FileReader();
+                    reader.onload = (evt) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            bgWallpaperImg = img;
+                            currentBackground = { type: 'wallpaper', val1: 'custom' };
+                            updateCompositing();
+                        };
+                        img.src = evt.target.result;
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+        }
+
+        // --- Tab Switching ---
+        function switchStudioTab(tab) {
+            ['presets', 'gradients', 'ai'].forEach(t => {
+                document.getElementById(`panel-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('active');
+            });
+            document.getElementById(`panel-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+        }
+
+        // --- Handle Subject File Upload ---
+        function handleSubjectFile(file) {
+            if (!file.type.startsWith('image/')) return alert("Please select a valid image file.");
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    originalSubjectImg = img;
+                    document.getElementById('canvas-placeholder').classList.add('hidden');
+                    mainCanvas.classList.remove('hidden');
+                    updateCompositing();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // --- Main Canvas Compositing Engine ---
+        function updateCompositing() {
+            if (!originalSubjectImg) return;
+
+            const w = originalSubjectImg.width;
+            const h = originalSubjectImg.height;
+
+            mainCanvas.width = w;
+            mainCanvas.height = h;
+
+            const blurVal = parseInt(document.getElementById('slider-blur').value);
+            const brightVal = parseInt(document.getElementById('slider-bright').value);
+            const featherVal = parseInt(document.getElementById('slider-feather').value);
+
+            document.getElementById('blur-val').innerText = blurVal + 'px';
+            document.getElementById('bright-val').innerText = brightVal + '%';
+            document.getElementById('feather-val').innerText = featherVal + 'px';
+
+            // 1. Draw Background Layer
+            ctx.save();
+            if (blurVal > 0) ctx.filter = `blur(${blurVal}px)`;
+
+            if (currentBackground.type === 'solid') {
+                if (currentBackground.val1 === 'transparent') {
+                    ctx.clearRect(0, 0, w, h);
+                } else {
+                    ctx.fillStyle = currentBackground.val1;
+                    ctx.fillRect(0, 0, w, h);
+                }
+            } else if (currentBackground.type === 'gradient') {
+                const grad = ctx.createLinearGradient(0, 0, w, h);
+                grad.addColorStop(0, currentBackground.val1);
+                grad.addColorStop(1, currentBackground.val2);
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, w, h);
+            } else if (currentBackground.type === 'wallpaper' && bgWallpaperImg) {
+                ctx.drawImage(bgWallpaperImg, 0, 0, w, h);
+            }
+            ctx.restore();
+
+            // 2. Draw Subject Layer with Brightness & Feather Filter
+            ctx.save();
+            ctx.filter = `brightness(${brightVal}%)`;
+
+            // Smart Edge Feathering Mask simulation
+            if (featherVal > 0) {
+                const offCanvas = document.createElement('canvas');
+                offCanvas.width = w;
+                offCanvas.height = h;
+                const offCtx = offCanvas.getContext('2d');
+                offCtx.drawImage(originalSubjectImg, 0, 0);
+
+                ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                ctx.shadowBlur = featherVal;
+                ctx.drawImage(offCanvas, 0, 0);
+            } else {
+                ctx.drawImage(originalSubjectImg, 0, 0);
+            }
+
+            ctx.restore();
+        }
+
+        // --- Background Selectors ---
+        function setSolidColor(color) {
+            currentBackground = { type: 'solid', val1: color };
+            updateCompositing();
+        }
+
+        function setGradient(c1, c2) {
+            currentBackground = { type: 'gradient', val1: c1, val2: c2 };
+            updateCompositing();
+        }
+
+        function applyCustomGradient() {
+            const c1 = document.getElementById('grad-color-1').value;
+            const c2 = document.getElementById('grad-color-2').value;
+            setGradient(c1, c2);
+        }
+
+        function setWallpaper(type) {
+            const bgCanvas = document.createElement('canvas');
+            bgCanvas.width = 1200;
+            bgCanvas.height = 800;
+            const bctx = bgCanvas.getContext('2d');
+
+            if (type === 'studio') {
+                const g = bctx.createRadialGradient(600, 400, 100, 600, 400, 700);
+                g.addColorStop(0, '#475569'); g.addColorStop(1, '#0f172a');
+                bctx.fillStyle = g; bctx.fillRect(0, 0, 1200, 800);
+            } else if (type === 'neon') {
+                const g = bctx.createLinearGradient(0, 0, 1200, 800);
+                g.addColorStop(0, '#31104b'); g.addColorStop(0.5, '#0f172a'); g.addColorStop(1, '#083344');
+                bctx.fillStyle = g; bctx.fillRect(0, 0, 1200, 800);
+            } else if (type === 'sunset') {
+                const g = bctx.createLinearGradient(0, 0, 0, 800);
+                g.addColorStop(0, '#ea580c'); g.addColorStop(0.5, '#db2777'); g.addColorStop(1, '#4c1d95');
+                bctx.fillStyle = g; bctx.fillRect(0, 0, 1200, 800);
+            } else if (type === 'luxury') {
+                const g = bctx.createLinearGradient(0, 0, 1200, 800);
+                g.addColorStop(0, '#78350f'); g.addColorStop(1, '#1c1917');
+                bctx.fillStyle = g; bctx.fillRect(0, 0, 1200, 800);
+            } else if (type === 'cafe') {
+                const g = bctx.createRadialGradient(400, 300, 50, 600, 400, 800);
+                g.addColorStop(0, '#92400e'); g.addColorStop(1, '#18181b');
+                bctx.fillStyle = g; bctx.fillRect(0, 0, 1200, 800);
+            } else if (type === 'bokeh') {
+                bctx.fillStyle = '#090d16'; bctx.fillRect(0, 0, 1200, 800);
+                bctx.fillStyle = 'rgba(236, 72, 153, 0.3)'; bctx.beginPath(); bctx.arc(300, 200, 180, 0, Math.PI*2); bctx.fill();
+                bctx.fillStyle = 'rgba(99, 102, 241, 0.3)'; bctx.beginPath(); bctx.arc(900, 500, 220, 0, Math.PI*2); bctx.fill();
+            }
+
+            const img = new Image();
+            img.onload = () => {
+                bgWallpaperImg = img;
+                currentBackground = { type: 'wallpaper', val1: type };
+                updateCompositing();
+            };
+            img.src = bgCanvas.toDataURL('image/png');
+        }
+
+        // --- AI Scene Prompt Background Generator ---
+        async function generateAIBackground() {
+            const prompt = document.getElementById('ai-prompt-input').value.trim();
+            if (!prompt) return alert("Please enter a scene prompt first.");
+
+            showLoader(true, "AI generating scene background...");
+
+            setTimeout(() => {
+                setWallpaper('neon');
+                showLoader(false);
+            }, 2000);
+        }
+
+        function setPromptChip(text) {
+            document.getElementById('ai-prompt-input').value = text;
+        }
+
+        // --- Before / After Split Slider ---
+        function toggleBeforeAfter() {
+            const box = document.getElementById('ba-comparison-box');
+            if (box.classList.contains('hidden')) {
+                if (!originalSubjectImg) return alert("Please upload or select an image first.");
+                document.getElementById('ba-original-img').src = originalSubjectImg.src;
+                document.getElementById('ba-cleaned-img').src = mainCanvas.toDataURL('image/png');
+                box.classList.remove('hidden');
+            } else {
+                box.classList.add('hidden');
+            }
+        }
+
+        function setupBeforeAfterSlider() {
+            const container = document.getElementById('ba-split-container');
+            const handle = document.getElementById('ba-slider-handle');
+            const afterLayer = document.getElementById('ba-after-layer');
+            let isDragging = false;
+
+            const moveSlider = (clientX) => {
+                const rect = container.getBoundingClientRect();
+                let x = clientX - rect.left;
+                if (x < 0) x = 0;
+                if (x > rect.width) x = rect.width;
+
+                const percent = (x / rect.width) * 100;
+                handle.style.left = percent + '%';
+                afterLayer.style.width = percent + '%';
+            };
+
+            handle.addEventListener('mousedown', () => isDragging = true);
+            window.addEventListener('mouseup', () => isDragging = false);
+            window.addEventListener('mousemove', (e) => { if (isDragging) moveSlider(e.clientX); });
+        }
+
+        // --- Sample Demo Previews Generator ---
+        function generateSamplePreviews() {
+            // Draw Model Sample
+            const c1 = document.getElementById('sample-canvas-1');
+            const ctx1 = c1.getContext('2d');
+            ctx1.fillStyle = '#312e81'; ctx1.fillRect(0, 0, 120, 120);
+            ctx1.fillStyle = '#fbbf24'; ctx1.beginPath(); ctx1.arc(60, 45, 25, 0, Math.PI*2); ctx1.fill();
+            ctx1.fillStyle = '#6366f1'; ctx1.fillRect(35, 75, 50, 45);
+
+            // Draw Product Sample
+            const c2 = document.getElementById('sample-canvas-2');
+            const ctx2 = c2.getContext('2d');
+            ctx2.fillStyle = '#065f46'; ctx2.fillRect(0, 0, 120, 120);
+            ctx2.fillStyle = '#10b981'; ctx2.fillRect(40, 30, 40, 60);
+
+            // Draw Car Sample
+            const c3 = document.getElementById('sample-canvas-3');
+            const ctx3 = c3.getContext('2d');
+            ctx3.fillStyle = '#831843'; ctx3.fillRect(0, 0, 120, 120);
+            ctx3.fillStyle = '#f43f5e'; ctx3.fillRect(20, 50, 80, 30);
+        }
+
+        function openSampleModal() { document.getElementById('sample-modal').classList.remove('hidden'); }
+        function closeSampleModal() { document.getElementById('sample-modal').classList.add('hidden'); }
+
+        function loadDemoSample(type) {
+            closeSampleModal();
+            let c = document.getElementById('sample-canvas-1');
+            if (type === 'product') c = document.getElementById('sample-canvas-2');
+            if (type === 'car') c = document.getElementById('sample-canvas-3');
+
+            const img = new Image();
+            img.onload = () => {
+                originalSubjectImg = img;
+                document.getElementById('canvas-placeholder').classList.add('hidden');
+                mainCanvas.classList.remove('hidden');
+                setWallpaper('studio');
+            };
+            img.src = c.toDataURL('image/png');
+        }
+
+        // --- Export Functions ---
+        function exportImage(format = 'png') {
+            if (!originalSubjectImg) return alert("No image loaded to export.");
+
+            const a = document.createElement('a');
+            const ext = format === 'jpg' ? 'jpg' : (format === 'webp' ? 'webp' : 'png');
+            a.href = mainCanvas.toDataURL(`image/${format === 'jpg' ? 'jpeg' : format}`);
+            a.download = `AI_Studio_Background_${Date.now()}.${ext}`;
+            a.click();
+        }
+
+        function resetWorkspace() {
+            originalSubjectImg = null;
+            document.getElementById('canvas-placeholder').classList.remove('hidden');
+            mainCanvas.classList.add('hidden');
+        }
+
+        function showLoader(show, text = '') {
+            const loader = document.getElementById('processing-loader');
+            if (show) {
+                loader.classList.remove('hidden');
+                document.getElementById('loader-status').innerText = text;
+            } else {
+                loader.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

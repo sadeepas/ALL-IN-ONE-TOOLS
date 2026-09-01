@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self'; worker-src 'self' blob:;">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <script src="security.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    
+    <title>Collagify Studio • Pro Ultimate</title>
+
+    <!-- Custom Premium Web Icon (Favicon & Apple Touch Icon) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='110' fill='%230f172a'/><rect x='96' y='96' width='144' height='144' rx='32' fill='%23a855f7'/><rect x='272' y='96' width='144' height='210' rx='32' fill='%23f43f5e'/><rect x='96' y='272' width='144' height='144' rx='32' fill='%23fbbf24'/><rect x='272' y='336' width='144' height='80' rx='25' fill='%23e2e8f0'/></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='110' fill='%230f172a'/><rect x='96' y='96' width='144' height='144' rx='32' fill='%23a855f7'/><rect x='272' y='96' width='144' height='210' rx='32' fill='%23f43f5e'/><rect x='96' y='272' width='144' height='144' rx='32' fill='%23fbbf24'/><rect x='272' y='336' width='144' height='80' rx='25' fill='%23e2e8f0'/></svg>">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+
+        // ── Security: Validate image source URLs ──────────────────
+        function isSafeImageUrl(url) {
+            if (!url) return false;
+            const u = String(url).trim().toLowerCase();
+            return u.startsWith('blob:') || u.startsWith('data:image/') || u.startsWith('http') || u.startsWith('/');
+        }
+        tailwind.config = { 
+            theme: { 
+                extend: { 
+                    colors: { 
+                        brand: '#a855f7', 
+                        accent: '#f43f5e',
+                        gold: '#fbbf24',
+                        surface: '#0f172a' 
+                    }, 
+                    fontFamily: { 
+                        sans: ['Plus Jakarta Sans', 'sans-serif'], 
+                        display:['Outfit', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'] 
+                    } 
+                } 
+            } 
+        };
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;900&family=Plus+Jakarta+Sans:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;1,700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+
+    <style>
+        :root { 
+            --c-gap: 16px; 
+            --c-radius: 16px; 
+            --c-bg: #0f172a; 
+            --c-padding: 24px; 
+            --c-shadow: 0 20px 40px rgba(0,0,0,0.4); 
+        }
+        body { background: #020617; color: #f8fafc; overflow: hidden; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        /* Premium UI Elements */
+        .glass-panel { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(40px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
+        .glass-button { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-top: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .glass-button:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 30px rgba(168, 85, 247, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3); border-color: rgba(255,255,255,0.2); }
+        .nav-tab.active { color: #fff; background: linear-gradient(135deg, rgba(168,85,247,0.2), rgba(244,63,94,0.2)); box-shadow: inset 0 0 0 1px rgba(168,85,247,0.4); }
+        
+        /* Sidebar Drawer for Mobile */
+        @media (max-width: 767px) {
+            #sidebar-drawer { position: absolute; bottom: 85px; left: 10px; right: 10px; height: 68vh; border-radius: 28px; transform: translateY(120%); opacity: 0; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 40; pointer-events: none; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
+            #sidebar-drawer.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+        }
+
+        /* Canvas & Export Wrapper */
+        #export-wrapper { background: var(--c-bg); padding: var(--c-padding); transition: 0.3s ease; box-shadow: var(--c-shadow), inset 0 0 0 1px rgba(255,255,255,0.05); overflow: hidden;}
+        #collage-canvas { gap: var(--c-gap); }
+        .collage-slot { border-radius: var(--c-radius); box-shadow: 0 8px 30px rgba(0,0,0,0.2); position: relative; transition: transform 0.3s ease, box-shadow 0.3s ease; overflow: hidden; }
+        .collage-slot:hover { transform: scale(1.01); z-index: 10; box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
+        
+        /* Special Layout Styles */
+        .polaroid-frame { background: #fff !important; padding: 16px 16px 60px 16px !important; border-radius: 4px !important; box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important; }
+        .tape-effect::after { content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%) rotate(-3deg); width: 80px; height: 25px; background: rgba(255,255,240,0.4); box-shadow: 0 1px 3px rgba(0,0,0,0.1); backdrop-filter: blur(2px); z-index: 20; }
+        .torn-paper { clip-path: polygon(0% 0%, 100% 0%, 100% 95%, 95% 100%, 85% 93%, 75% 100%, 65% 94%, 55% 100%, 45% 92%, 35% 100%, 25% 95%, 15% 100%, 5% 93%, 0% 100%); border-radius: 0 !important; }
+        .y2k-frame { border: 4px solid #ff00ff !important; box-shadow: 0 0 15px #ff00ff, inset 0 0 15px #ff00ff !important; border-radius: 20px !important;}
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: slideFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom Controls */
+        ::-webkit-scrollbar { width: 4px; background:transparent; } ::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.5); border-radius: 10px; }
+        input[type=range] { appearance: none; -webkit-appearance: none; width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 4px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #a855f7; box-shadow: 0 0 10px rgba(168,85,247,0.5); cursor: pointer;}
+
+        .draggable-item { cursor: grab; position: absolute; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); padding: 8px; }
+        .draggable-item.editing { border: 2px dashed #a855f7; background: rgba(0,0,0,0.4); cursor: text; border-radius: 8px;}
+        
+        /* Text Slots & Captions */
+        .text-slot { background: white; color: #111; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:1.5rem; transition: transform 0.3s ease; }
+        .text-slot-content { outline: none; transition: 0.2s; border: 1px dashed transparent; min-height: 20px; }
+        .text-slot-content:focus { border-color: #a855f7; background: rgba(0,0,0,0.02); border-radius: 4px; }
+        .polaroid-caption { position:absolute; bottom:15px; left:10px; right:10px; text-align:center; font-family:'Playfair Display',serif; font-size:clamp(8px, 2vw, 14px); font-weight:700; color:#111; outline:none; font-style:italic;}
+        .polaroid-caption:focus { background:rgba(0,0,0,0.05); }
+        
+        /* Grid Resizer (Canva Style) */
+        .grid-resizer-col { position: absolute; top:0; bottom:0; width: 16px; cursor: col-resize; z-index: 20; transform: translateX(-50%); }
+        .grid-resizer-row { position: absolute; left:0; right:0; height: 16px; cursor: row-resize; z-index: 20; transform: translateY(-50%); }
+        .grid-resizer-col:hover, .grid-resizer-row:hover { background: rgba(168,85,247,0.4); opacity: 0.5; backdrop-filter: blur(2px); }
+        body.resizing * { pointer-events: none !important; user-select: none !important; }
+        body.resizing { cursor: move; }
+
+        /* Accordion Layout UI */
+        .layout-cat-body { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0; }
+        .layout-cat-body.open { max-height: 2500px; opacity: 1; }
+        
+        #ai-smart-toggle:checked ~ .toggle-dot { transform: translateX(20px); background: #ffffff; }
+        #ai-smart-toggle:checked + .toggle-bg { background: rgba(168,85,247,0.9); box-shadow: 0 0 15px rgba(168,85,247,0.5); }
+        
+        /* Filter Previews */
+        .filter-btn { transition: 0.2s; }
+        .filter-btn:hover { border-color: #a855f7; }
+    </style>
+
+  <!-- XSS Protection: Safe escaping utility -->
+  <script>
+    // Global safe text utility - use this instead of innerHTML for user data
+    window.safeText = function(str) {
+      const d = document.createElement('div');
+      d.textContent = String(str || '');
+      return d.innerHTML;
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+</head>
+
+<body class="flex flex-col h-[100dvh] overflow-hidden">
+    <!-- Header Section -->
+    <header class="h-[72px] glass-panel flex items-center justify-between px-6 shrink-0 z-50 relative border-b border-white/5">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand to-accent flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                <i class="fas fa-layer-group text-white text-lg"></i>
+            </div>
+            <h1 class="text-2xl font-display font-black tracking-tight">Collagify <span class="text-transparent bg-clip-text bg-gradient-to-r from-gold to-yellow-200 font-serif italic text-3xl font-normal ml-1">Ultimate</span></h1>
+        </div>
+        
+        <div class="hidden md:flex bg-black/50 rounded-xl p-1.5 gap-1 border border-white/5">
+            <button class="ratio-btn active px-5 py-2 rounded-lg text-sm font-bold transition-all" data-ratio="1/1">1:1 Post</button>
+            <button class="ratio-btn px-5 py-2 rounded-lg text-sm font-bold text-gray-400 transition-all" data-ratio="4/5">4:5 Portrait</button>
+            <button class="ratio-btn px-5 py-2 rounded-lg text-sm font-bold text-gray-400 transition-all" data-ratio="9/16">9:16 Story</button>
+            <button class="ratio-btn px-5 py-2 rounded-lg text-sm font-bold text-gray-400 transition-all" data-ratio="16/9">16:9 Cover</button>
+        </div>
+        
+        <div class="relative group">
+            <button id="export-options-btn" class="px-6 py-2.5 bg-gradient-to-r from-brand to-accent font-bold rounded-xl text-sm shadow-[0_0_20px_rgba(244,63,94,0.4)] hover:scale-105 hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] transition-all duration-300 flex items-center gap-2 text-white">
+                <i class="fas fa-crown text-gold"></i> Export Options <i class="fas fa-chevron-down text-xs ml-1 opacity-70"></i>
+            </button>
+            <div id="export-dropdown" class="absolute right-0 top-full mt-3 w-48 glass-panel rounded-2xl overflow-hidden opacity-0 pointer-events-none transform translate-y-2 transition-all duration-300 z-50">
+                <button class="export-btn-format w-full text-left px-4 py-3 hover:bg-white/10 text-white font-bold text-sm border-b border-white/5 transition-colors flex justify-between items-center" data-format="png"><span>PNG Format</span> <span class="text-[10px] text-brand uppercase tracking-wider">Top Tier</span></button>
+                <button class="export-btn-format w-full text-left px-4 py-3 hover:bg-white/10 text-white font-bold text-sm border-b border-white/5 transition-colors flex justify-between items-center" data-format="jpeg"><span>JPG Format</span> <span class="text-[10px] text-gray-400 uppercase tracking-wider">Standard</span></button>
+                <button class="export-btn-format w-full text-left px-4 py-3 hover:bg-white/10 text-white font-bold text-sm transition-colors flex justify-between items-center" data-format="webp"><span>WEBP Format</span> <span class="text-[10px] text-accent uppercase tracking-wider">Web Opt</span></button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 flex overflow-hidden relative">
+        <!-- Sidebar Navigation -->
+        <nav class="hidden md:flex w-24 glass-panel flex-col items-center py-8 gap-5 z-40 border-r border-white/5">
+            <button class="nav-tab active w-14 h-14 rounded-2xl text-gray-400 flex flex-col items-center justify-center gap-1 transition-all" data-target="tab-media"><i class="fas fa-images text-xl"></i><span class="text-[9px] font-bold uppercase">Media</span></button>
+            <button class="nav-tab w-14 h-14 rounded-2xl text-gray-400 flex flex-col items-center justify-center gap-1 transition-all" data-target="tab-layout"><i class="fas fa-border-all text-xl"></i><span class="text-[9px] font-bold uppercase">Layout</span></button>
+            <button class="nav-tab w-14 h-14 rounded-2xl text-gray-400 flex flex-col items-center justify-center gap-1 transition-all" data-target="tab-design"><i class="fas fa-sliders text-xl"></i><span class="text-[9px] font-bold uppercase">Design</span></button>
+            <button class="nav-tab w-14 h-14 rounded-2xl text-gray-400 flex flex-col items-center justify-center gap-1 transition-all" data-target="tab-bg"><i class="fas fa-palette text-xl"></i><span class="text-[9px] font-bold uppercase">Canvas</span></button>
+            <button class="nav-tab w-14 h-14 rounded-2xl text-gray-400 flex flex-col items-center justify-center gap-1 transition-all" data-target="tab-text"><i class="fas fa-font text-xl"></i><span class="text-[9px] font-bold uppercase">Text</span></button>
+            <button class="nav-tab w-14 h-14 rounded-2xl text-gray-400 flex flex-col items-center justify-center gap-1 transition-all" data-target="tab-fx"><i class="fas fa-wand-magic-sparkles text-xl"></i><span class="text-[9px] font-bold uppercase">Effects</span></button>
+            <button class="nav-tab w-14 h-14 rounded-2xl text-gray-400 flex flex-col items-center justify-center gap-1 transition-all" data-target="tab-stickers"><i class="fas fa-face-smile text-xl"></i><span class="text-[9px] font-bold uppercase">Extras</span></button>
+        </nav>
+
+        <!-- Sidebar Content Drawer -->
+        <aside id="sidebar-drawer" class="md:w-[360px] glass-panel flex flex-col h-full z-40 md:relative border-r border-white/5 bg-surface/95 backdrop-blur-3xl">
+            <div class="md:hidden flex justify-center pt-3 pb-1 cursor-pointer" id="drag-handle"><div class="w-12 h-1.5 bg-white/20 rounded-full"></div></div>
+            <div class="md:hidden flex justify-between items-center px-6 pb-3 border-b border-white/5">
+                <span class="font-display font-bold text-lg">Tools</span>
+                <button id="close-drawer" class="w-8 h-8 rounded-full bg-white/10 text-sm"><i class="fas fa-chevron-down"></i></button>
+            </div>
+            
+            <div class="flex-1 overflow-hidden relative">
+                <!-- Media Tab -->
+                <div id="tab-media" class="tab-content active p-6 h-full overflow-y-auto">
+                    <label class="flex flex-col items-center justify-center w-full h-40 glass-button border-2 border-dashed border-brand/50 rounded-2xl cursor-pointer hover:bg-brand/10 transition-colors group">
+                        <div class="w-14 h-14 bg-brand/20 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                            <i class="fas fa-cloud-arrow-up text-2xl text-brand"></i>
+                        </div>
+                        <span class="text-base font-bold text-white">Upload High-Res Photos</span>
+                        <span class="text-xs text-gray-400 mt-1">Drag & drop or click to browse</span>
+                        <input type="file" id="file-upload" class="hidden" multiple accept="image/*">
+                    </label>
+                    <div class="flex justify-between items-center mt-6 mb-3">
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Your Gallery</span>
+                        <button id="clear-gallery" class="text-red-400 hover:text-red-300 text-xs font-bold flex items-center gap-1 bg-red-500/10 px-3 py-1.5 rounded-lg"><i class="fas fa-trash-can"></i> Clear</button>
+                    </div>
+                    <div id="gallery-grid" class="grid grid-cols-3 gap-3"></div>
+                </div>
+
+                <!-- Layout Tab -->
+                <div id="tab-layout" class="tab-content h-full overflow-y-auto p-4 relative">
+                    <div class="sticky top-0 z-30 bg-[#0f172a]/95 backdrop-blur-xl pb-4 border-b border-white/5 mb-4 shadow-xl">
+                        <button id="btn-auto-layout" class="w-full py-3 bg-gradient-to-r from-brand to-accent rounded-xl font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_5px_20px_rgba(168,85,247,0.4)] hover:scale-[1.03] transition-transform text-white text-xs mb-3">
+                            <i class="fas fa-magic"></i> Auto Generate Random Layout
+                        </button>
+                        <label class="flex items-center justify-between glass-button px-4 py-3 rounded-xl cursor-pointer hover:bg-white/10 group">
+                            <span class="text-[10px] font-bold text-gray-300 uppercase tracking-widest group-hover:text-white transition-colors"><i class="fas fa-brain text-brand mr-2"></i>Smart AI Auto-Collage</span>
+                            <div class="relative w-10 h-5 bg-white/10 rounded-full shadow-inner toggle-bg transition-colors border border-white/10">
+                                <input type="checkbox" id="ai-smart-toggle" class="opacity-0 w-0 h-0 absolute">
+                                <div class="absolute left-[3px] top-[3px] w-3.5 h-3.5 bg-gray-400 rounded-full transition-transform toggle-dot"></div>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div id="style-accordion-container" class="flex flex-col gap-2 pb-10">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Design Tab -->
+                <div id="tab-design" class="tab-content p-6 h-full overflow-y-auto">
+                    <div class="space-y-7">
+                        <div class="bg-black/20 p-5 rounded-2xl border border-white/5">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase mb-5 tracking-wider"><i class="fas fa-border-style mr-2"></i>Spacing & Geometry</h3>
+                            <div class="space-y-5">
+                                <div><div class="flex justify-between text-sm mb-2 font-medium"><span>Inner Gap</span><span id="val-gap" class="text-brand">16px</span></div><input type="range" id="slider-gap" min="0" max="80" value="16"></div>
+                                <div><div class="flex justify-between text-sm mb-2 font-medium"><span>Corner Radius</span><span id="val-rad" class="text-brand">16px</span></div><input type="range" id="slider-rad" min="0" max="150" value="16"></div>
+                                <div><div class="flex justify-between text-sm mb-2 font-medium"><span>Outer Padding</span><span id="val-pad" class="text-brand">24px</span></div><input type="range" id="slider-pad" min="0" max="100" value="24"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-black/20 p-5 rounded-2xl border border-white/5">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-wider"><i class="fas fa-paintbrush mr-2"></i>Border Styling</h3>
+                            <div class="flex flex-wrap gap-3">
+                                <label class="w-10 h-10 rounded-xl border-2 border-dashed border-white/30 cursor-pointer overflow-hidden relative flex items-center justify-center hover:scale-110 transition-transform">
+                                    <i class="fas fa-eye-dropper text-white/50 text-xs"></i>
+                                    <input type="color" id="custom-border-color" class="absolute opacity-0 w-full h-full cursor-pointer" value="#ffffff">
+                                </label>
+                                <button data-border="transparent" class="border-btn w-10 h-10 bg-black/50 rounded-xl border border-white/10 text-white/50 text-sm flex items-center justify-center hover:scale-110 transition-transform" title="No Border"><i class="fas fa-ban"></i></button>
+                                <button data-border="#ffffff" class="border-btn w-10 h-10 bg-white rounded-xl shadow-lg hover:scale-110 transition-transform"></button>
+                                <button data-border="#000000" class="border-btn w-10 h-10 bg-black rounded-xl border border-white/20 hover:scale-110 transition-transform"></button>
+                                <button data-border="#a855f7" class="border-btn w-10 h-10 bg-brand rounded-xl hover:scale-110 transition-transform"></button>
+                                <button data-border="#f43f5e" class="border-btn w-10 h-10 bg-accent rounded-xl hover:scale-110 transition-transform"></button>
+                                <button data-border="#fbbf24" class="border-btn w-10 h-10 bg-gold rounded-xl hover:scale-110 transition-transform"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas/BG Tab -->
+                <div id="tab-bg" class="tab-content p-6 h-full overflow-y-auto">
+                    <label class="w-full py-4 glass-button rounded-xl flex items-center justify-center gap-3 cursor-pointer font-bold mb-6 text-sm hover:bg-white/10 transition-all border border-brand/30">
+                        <i class="fas fa-image text-brand text-lg"></i> Custom Background Image
+                        <input type="file" id="bg-upload" class="hidden" accept="image/*">
+                    </label>
+                    
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-wider">Premium Gradients & Textures</h3>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button data-bg="#ffffff" class="bg-btn aspect-square rounded-xl bg-white border border-white/10 hover:scale-105 transition-transform"></button>
+                        <button data-bg="#0f172a" class="bg-btn aspect-square rounded-xl bg-[#0f172a] border border-white/10 hover:scale-105 transition-transform"></button>
+                        <button data-bg="#e5e5f7" class="bg-btn aspect-square rounded-xl bg-[#e5e5f7] border border-white/10 hover:scale-105 transition-transform" style="background-image: radial-gradient(#444cf7 1px, #e5e5f7 1px); background-size: 10px 10px;"></button>
+                        <button data-bg="linear-gradient(135deg, #a855f7, #f43f5e)" class="bg-btn aspect-square rounded-xl border border-white/10 hover:scale-105 transition-transform" style="background:linear-gradient(135deg, #a855f7, #f43f5e)"></button>
+                        <button data-bg="linear-gradient(45deg, #fbbf24, #f59e0b)" class="bg-btn aspect-square rounded-xl border border-white/10 hover:scale-105 transition-transform" style="background:linear-gradient(45deg, #fbbf24, #f59e0b)"></button>
+                        <button data-bg="url('https://www.transparenttextures.com/patterns/black-paper.png') #1d1d1d" class="bg-btn aspect-square rounded-xl border border-white/10 hover:scale-105 transition-transform" style="background:url('https://www.transparenttextures.com/patterns/black-paper.png') #1d1d1d"></button>
+                        <button data-bg="linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%)" class="bg-btn aspect-square rounded-xl border border-white/10 hover:scale-105 transition-transform" style="background:linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%)"></button>
+                        <button data-bg="linear-gradient(to right, #4facfe 0%, #00f2fe 100%)" class="bg-btn aspect-square rounded-xl border border-white/10 hover:scale-105 transition-transform" style="background:linear-gradient(to right, #4facfe 0%, #00f2fe 100%)"></button>
+                        <button data-bg="url('https://www.transparenttextures.com/patterns/cubes.png') #000" class="bg-btn aspect-square rounded-xl border border-white/10 hover:scale-105 transition-transform" style="background:url('https://www.transparenttextures.com/patterns/cubes.png') #000"></button>
+                    </div>
+                </div>
+
+                <!-- Text Tab -->
+                <div id="tab-text" class="tab-content p-6 h-full overflow-y-auto">
+                    <button id="add-text-btn" class="w-full py-4 bg-gradient-to-r from-brand to-accent rounded-xl font-bold mb-6 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:scale-[1.02] transition-transform">
+                        <i class="fas fa-plus-circle text-lg"></i> Add Typography
+                    </button>
+                    
+                    <div id="text-controls" class="space-y-5 opacity-50 pointer-events-none transition-opacity bg-black/30 p-5 rounded-2xl border border-white/5">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-[10px] text-brand uppercase font-black tracking-widest flex items-center gap-2"><i class="fas fa-pen-nib"></i> Edit Selected Text</p>
+                            <button id="delete-text-btn" class="w-8 h-8 bg-red-500/20 text-red-400 rounded-lg flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors"><i class="fas fa-trash"></i></button>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs text-gray-400 font-bold block mb-2">Text Color</label>
+                                <label class="w-full h-10 block rounded-xl overflow-hidden border border-white/20 relative cursor-pointer">
+                                    <input type="color" id="text-color" class="absolute -inset-2 w-[150%] h-[150%] cursor-pointer" value="#ffffff">
+                                </label>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400 font-bold block mb-2">Background</label>
+                                <label class="w-full h-10 block rounded-xl overflow-hidden border border-white/20 relative cursor-pointer">
+                                    <input type="color" id="text-bg-color" class="absolute -inset-2 w-[150%] h-[150%] cursor-pointer" value="#000000">
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="text-xs text-gray-400 font-bold block mb-2">Font Family</label>
+                            <select id="text-font" class="w-full bg-black/50 text-sm p-3 rounded-xl outline-none border border-white/10 font-bold text-white appearance-none">
+                                <option value="'Outfit', sans-serif">Outfit (Modern)</option>
+                                <option value="'Playfair Display', serif">Playfair (Elegant)</option>
+                                <option value="'Plus Jakarta Sans', sans-serif">Jakarta (Clean)</option>
+                                <option value="'Courier New', monospace">Courier (Typewriter)</option>
+                                <option value="Impact, sans-serif">Impact (Bold)</option>
+                            </select>
+                        </div>
+                        
+                        <div><div class="flex justify-between text-xs mb-2 text-gray-400 font-bold"><span>Size</span></div><input type="range" id="text-size" min="12" max="200" value="48"></div>
+                        <div><div class="flex justify-between text-xs mb-2 text-gray-400 font-bold"><span>Letter Spacing</span></div><input type="range" id="text-spacing" min="-5" max="30" value="0"></div>
+                        <div><div class="flex justify-between text-xs mb-2 text-gray-400 font-bold"><span>Drop Shadow</span></div><input type="range" id="text-shadow" min="0" max="100" value="30"></div>
+                    </div>
+                </div>
+
+                <!-- FX / Filters Tab -->
+                <div id="tab-fx" class="tab-content p-6 h-full overflow-y-auto">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-wider"><i class="fas fa-magic mr-2"></i>Smart Presets</h3>
+                    <div class="grid grid-cols-4 gap-2 mb-8">
+                        <button class="preset-btn filter-btn flex flex-col items-center gap-1 p-2 bg-white/5 rounded-xl border border-white/10" data-f="100,100,100,0,0">
+                            <div class="w-10 h-10 rounded-full bg-gray-500"></div><span class="text-[10px]">Normal</span>
+                        </button>
+                        <button class="preset-btn filter-btn flex flex-col items-center gap-1 p-2 bg-white/5 rounded-xl border border-white/10" data-f="110,120,130,0,0">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-yellow-400 to-red-500"></div><span class="text-[10px]">Vivid</span>
+                        </button>
+                        <button class="preset-btn filter-btn flex flex-col items-center gap-1 p-2 bg-white/5 rounded-xl border border-white/10" data-f="100,120,0,0,0">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-900 to-gray-400"></div><span class="text-[10px]">Noir</span>
+                        </button>
+                        <button class="preset-btn filter-btn flex flex-col items-center gap-1 p-2 bg-white/5 rounded-xl border border-white/10" data-f="90,110,80,30,0">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-700 to-orange-300"></div><span class="text-[10px]">Vintage</span>
+                        </button>
+                        <button class="preset-btn filter-btn flex flex-col items-center gap-1 p-2 bg-white/5 rounded-xl border border-white/10" data-f="105,115,140,180,0">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-400 to-blue-600"></div><span class="text-[10px]">Cyber</span>
+                        </button>
+                        <button class="preset-btn filter-btn flex flex-col items-center gap-1 p-2 bg-white/5 rounded-xl border border-white/10" data-f="120,90,70,0,0">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-200 to-rose-300"></div><span class="text-[10px]">Soft</span>
+                        </button>
+                    </div>
+
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-wider"><i class="fas fa-shapes mr-2"></i>Photo Shapes (Global)</h3>
+                    <div class="grid grid-cols-5 gap-2 mb-8">
+                        <button class="shape-btn filter-btn flex flex-col items-center gap-1 p-2 bg-white/5 rounded-xl border border-white/10" data-s="">
+                            <div class="w-8 h-8 bg-gray-500 rounded-sm"></div><span class="text-[9px]">Square</span>
+                        </button>
+                        <button class="shape-btn filter-btn flex flex-col items-center gap-1 p-2 bg-white/5 rounded-xl border border-white/10" data-s="!rounded-[40px]">
+                            <div class="w-8 h-8 bg-brand rounded-xl"></div><span class="text-[9px]">Rounded</span>
+                        </button>
+                        <button class="shape-btn filter-btn flex flex-col items-center gap-1 p-2 bg-white/5 rounded-xl border border-white/10" data-s="!rounded-full">
+                            <div class="w-8 h-8 bg-accent rounded-full"></div><span class="text-[9px]">Circle</span>
+                        </button>
+                        <button class="shape-btn filter-btn flex flex-col items-center gap-1 p-2 bg-white/5 rounded-xl border border-white/10" data-s="!rounded-t-full">
+                            <div class="w-8 h-8 bg-gold rounded-t-full"></div><span class="text-[9px]">Arch</span>
+                        </button>
+                        <button class="shape-btn filter-btn flex flex-col items-center gap-1 p-2 bg-white/5 rounded-xl border border-white/10" style="clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)" data-s="clip-hexa">
+                            <div class="w-8 h-8 bg-cyan-400 style="clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)"></div><span class="text-[9px]">Hexa</span>
+                        </button>
+                    </div>
+
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-wider"><i class="fas fa-sliders mr-2"></i>Pro Adjustments</h3>
+                    <div class="space-y-5 bg-black/20 p-5 rounded-2xl border border-white/5">
+                        <div><div class="flex justify-between text-xs mb-2 font-bold text-gray-300"><span>Brightness</span></div><input type="range" id="fx-bright" min="50" max="150" value="100"></div>
+                        <div><div class="flex justify-between text-xs mb-2 font-bold text-gray-300"><span>Contrast</span></div><input type="range" id="fx-cont" min="50" max="150" value="100"></div>
+                        <div><div class="flex justify-between text-xs mb-2 font-bold text-gray-300"><span>Saturation</span></div><input type="range" id="fx-sat" min="0" max="250" value="100"></div>
+                        <div><div class="flex justify-between text-xs mb-2 font-bold text-gray-300"><span>Hue Shift</span></div><input type="range" id="fx-hue" min="0" max="360" value="0"></div>
+                        <div><div class="flex justify-between text-xs mb-2 font-bold text-gray-300"><span>Gaussian Blur</span></div><input type="range" id="fx-blur" min="0" max="20" value="0"></div>
+                    </div>
+                </div>
+
+                <!-- Stickers Tab -->
+                <div id="tab-stickers" class="tab-content p-6 h-full overflow-y-auto">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-wider">Aesthetic Elements</h3>
+                    <div class="grid grid-cols-4 gap-3">
+                        <button class="add-sticker-btn w-full aspect-square glass-button rounded-xl text-3xl flex items-center justify-center hover:scale-110" data-type="text" data-val="⭐">⭐</button>
+                        <button class="add-sticker-btn w-full aspect-square glass-button rounded-xl text-3xl flex items-center justify-center hover:scale-110" data-type="text" data-val="✨">✨</button>
+                        <button class="add-sticker-btn w-full aspect-square glass-button rounded-xl text-3xl flex items-center justify-center hover:scale-110" data-type="text" data-val="❤️">❤️</button>
+                        <button class="add-sticker-btn w-full aspect-square glass-button rounded-xl text-3xl flex items-center justify-center hover:scale-110" data-type="text" data-val="🔥">🔥</button>
+                        <button class="add-sticker-btn w-full aspect-square glass-button rounded-xl text-3xl flex items-center justify-center hover:scale-110" data-type="text" data-val="🦋">🦋</button>
+                        <button class="add-sticker-btn w-full aspect-square glass-button rounded-xl text-3xl flex items-center justify-center hover:scale-110" data-type="text" data-val="💿">💿</button>
+                        <button class="add-sticker-btn w-full aspect-square glass-button rounded-xl text-3xl flex items-center justify-center hover:scale-110" data-type="text" data-val="🎀">🎀</button>
+                        <button class="add-sticker-btn w-full aspect-square glass-button rounded-xl text-3xl flex items-center justify-center hover:scale-110" data-type="text" data-val="📌">📌</button>
+                    </div>
+                    
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mt-8 mb-4 tracking-wider">Masking Tape</h3>
+                    <button class="add-sticker-btn w-full h-12 glass-button rounded-xl flex items-center justify-center gap-2" data-type="tape">
+                        <div class="w-16 h-4 bg-white/60 shadow-sm rotate-3"></div> Add Tape Piece
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Canvas Workspace -->
+        <section id="workspace-container" class="flex-1 flex flex-col items-center justify-center p-4 relative z-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] bg-opacity-20">
+            <!-- Canvas Toolbar -->
+            <div class="absolute top-4 right-4 glass-panel px-4 py-2 rounded-full flex gap-4 z-30 shadow-2xl">
+                <button class="text-gray-400 hover:text-white transition-colors" onclick="document.getElementById('workspace-container').style.transform='scale(0.8)'" title="Zoom Out"><i class="fas fa-magnifying-glass-minus"></i></button>
+                <button class="text-gray-400 hover:text-white transition-colors" onclick="document.getElementById('workspace-container').style.transform='scale(1)'" title="Reset Zoom"><i class="fas fa-compress"></i></button>
+                <button class="text-gray-400 hover:text-white transition-colors" onclick="document.getElementById('workspace-container').style.transform='scale(1.2)'" title="Zoom In"><i class="fas fa-magnifying-glass-plus"></i></button>
+            </div>
+
+            <div class="max-w-[90%] md:max-w-[700px] w-full relative transition-transform duration-300" style="aspect-ratio: var(--canvas-ratio, 1/1);">
+                <div id="export-wrapper" class="relative w-full h-full rounded-[24px]">
+                    <div id="overlay-layer" class="absolute inset-0 z-30 pointer-events-none"></div>
+                    <div id="collage-canvas" class="w-full h-full relative z-10"></div>
+                </div>
+            </div>
+            <p class="absolute bottom-6 text-white/30 text-xs font-bold tracking-widest uppercase"><i class="fas fa-info-circle"></i> Drag photos to reposition inside frames</p>
+        </section>
+    </main>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="md:hidden fixed bottom-6 left-4 right-4 h-16 glass-panel rounded-2xl z-50 flex justify-between px-2 shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+        <button class="nav-tab active flex-1 flex-col flex items-center justify-center text-gray-400 rounded-xl transition-all" data-target="tab-media"><i class="fas fa-images"></i></button>
+        <button class="nav-tab flex-1 flex-col flex items-center justify-center text-gray-400 rounded-xl transition-all" data-target="tab-layout"><i class="fas fa-border-all"></i></button>
+        <button class="nav-tab flex-1 flex-col flex items-center justify-center text-gray-400 rounded-xl transition-all" data-target="tab-design"><i class="fas fa-sliders"></i></button>
+        <button class="nav-tab flex-1 flex-col flex items-center justify-center text-gray-400 rounded-xl transition-all" data-target="tab-bg"><i class="fas fa-palette"></i></button>
+        <button class="nav-tab flex-1 flex-col flex items-center justify-center text-gray-400 rounded-xl transition-all" data-target="tab-text"><i class="fas fa-font"></i></button>
+        <button class="nav-tab flex-1 flex-col flex items-center justify-center text-gray-400 rounded-xl transition-all" data-target="tab-stickers"><i class="fas fa-face-smile"></i></button>
+    </nav>
+
+    <script>
+        let State = { p:[], l: 'grid-smart', r: '1/1', g: 16, rad: 16, pad: 24, bg: '#0f172a', border: 'transparent' };
+        const DOM = { 
+            cvs: document.getElementById('collage-canvas'), 
+            ext: document.getElementById('export-wrapper'), 
+            gal: document.getElementById('gallery-grid'), 
+            ovr: document.getElementById('overlay-layer'), 
+            sbar: document.getElementById('sidebar-drawer') 
+        };
+
+        // Advanced Layout Factory Functions
+        function mGrid(c, cL, rL) { 
+            DOM.cvs.className='w-full h-full grid relative'; 
+            DOM.cvs.style.gap='var(--c-gap)';
+            DOM.cvs.style.gridTemplateColumns=Array(cL).fill('1fr').join(' '); 
+            DOM.cvs.style.gridTemplateRows=Array(rL).fill('1fr').join(' '); 
+            DOM.cvs.innerHTML=''; 
+            for(let i=0; i<Math.min(c, cL*rL); i++) cSlot(State.p[i]); 
+            injectGridResizers(cL, rL);
+        }
+        
+        function mBento(c, cL, rL, sP) { 
+            DOM.cvs.className='w-full h-full grid relative'; 
+            DOM.cvs.style.gap='var(--c-gap)';
+            DOM.cvs.style.gridTemplateColumns=Array(cL).fill('1fr').join(' '); 
+            DOM.cvs.style.gridTemplateRows=Array(rL).fill('1fr').join(' '); 
+            DOM.cvs.innerHTML=''; 
+            for(let i=0; i<Math.min(c, sP.length); i++) cSlot(State.p[i], sP[i]); 
+            injectGridResizers(cL, rL); // allows resizing underlying columns
+        }
+        
+        function mScat(c, ex, rot, scl=1, hasCaption=false) { 
+            DOM.cvs.className='w-full h-full relative p-[var(--c-padding)]'; 
+            DOM.cvs.style.gap = '0px';
+            DOM.cvs.innerHTML=''; 
+            for(let i=0; i<Math.min(c, 12); i++){ 
+                const s=cSlot(State.p[i], `absolute collage-slot ${ex}`, true); 
+                s.style.width=`${40*scl}%`; s.style.height=`${40*scl}%`; 
+                s.style.top=`${5+Math.random()*50}%`; s.style.left=`${5+Math.random()*50}%`; 
+                if(rot) s.style.transform=`rotate(${Math.random()*40-20}deg)`; 
+                if(hasCaption) {
+                    const t = document.createElement('div');
+                    t.className = 'polaroid-caption'; t.contentEditable = true; t.innerText = 'Add Caption...';
+                    s.appendChild(t);
+                    t.onpointerdown = e => e.stopPropagation(); // Block drag when clicking text
+                }
+                mDragElement(s); 
+            } 
+        }
+
+        // Advanced Editorial Text Support
+        function cTextSlot(html, ext='', pNode=DOM.cvs) {
+            const s=document.createElement('div');
+            s.className=`collage-slot text-slot ${ext}`;
+            const t=document.createElement('div');
+            t.className='text-slot-content w-full font-serif leading-tight cursor-text select-text';
+            t.contentEditable=true; t.innerHTML=html;
+            t.onpointerdown = e => e.stopPropagation();
+            s.appendChild(t); pNode.appendChild(s); return s;
+        }
+
+        function mEditorialGrid(c, cL, rL, txtMap) {
+            DOM.cvs.className='w-full h-full grid relative'; 
+            DOM.cvs.style.gap='var(--c-gap)';
+            DOM.cvs.style.gridTemplateColumns=Array(cL).fill('1fr').join(' '); 
+            DOM.cvs.style.gridTemplateRows=Array(rL).fill('1fr').join(' '); 
+            DOM.cvs.innerHTML=''; 
+            let imgCursor = 0;
+            for(let i=0; i<cL*rL; i++) {
+                if(txtMap[i]) { cTextSlot(txtMap[i], 'bg-white z-10 !shadow-none ring-1 ring-black/5 flex-col', DOM.cvs); } 
+                else { cSlot(State.p[imgCursor] || null); imgCursor++; }
+            }
+        }
+        
+        function mFocusScatterRing(c) {
+            DOM.cvs.className='w-full h-full relative overflow-hidden bg-black/80 flex items-center justify-center p-[var(--c-padding)]'; 
+            DOM.cvs.style.gap = '0px'; DOM.cvs.innerHTML=''; 
+            for(let i=0; i<Math.min(c, 15); i++){ 
+                const s=cSlot(State.p[i]||null, `absolute collage-slot border-[10px] border-white !shadow-2xl z-0`, true); 
+                s.style.width=`35%`; s.style.height=`35%`; 
+                if(Math.random() > 0.5) { s.style.left=`${Math.random() > 0.5 ? -10 : 70}%`; s.style.top=`${Math.random()*80}%`;}
+                else { s.style.top=`${Math.random() > 0.5 ? -10 : 70}%`; s.style.left=`${Math.random()*80}%`;}
+                s.style.transform=`rotate(${Math.random()*60-30}deg)`; mDragElement(s); 
+            } 
+            cTextSlot(`<h2 style="font-family:'Outfit'; font-size:4vw; font-weight:900; color:#fbbf24; text-transform:uppercase; margin-bottom:10px;">YOUR MESSAGE</h2><p style="font-family:'Plus Jakarta Sans'; font-size:1.5vw; color:#f8fafc; opacity:0.8;">Editable description for your amazing photo collage memory.</p>`, `absolute z-20 !w-[75%] !h-[50%] bg-[#1a1a1a] !border-[6px] !border-gold !shadow-[0_20px_60px_rgba(0,0,0,0.8)] !border-solid ring-0`, DOM.cvs);
+        }
+
+        function mVectorSlant(c) {
+            DOM.cvs.className='w-full h-full grid relative'; 
+            DOM.cvs.style.gap='2px'; DOM.cvs.innerHTML=''; 
+            DOM.cvs.style.gridTemplateColumns='repeat(3, 1fr)'; 
+            DOM.cvs.style.gridTemplateRows='repeat(2, 1fr)'; 
+            for(let i=0; i<Math.min(c, 6); i++) {
+                let slot = cSlot(State.p[i] || null, '!rounded-none border-0');
+                if(i%2===0) slot.style.clipPath = 'polygon(0 0, 100% 10%, 100% 100%, 0 90%)';
+                else slot.style.clipPath = 'polygon(0 10%, 100% 0, 100% 90%, 0 100%)';
+                slot.style.transform = 'scale(1.05)';
+            }
+        }
+        
+        function mDiamondMasonry(c) {
+            // Container wrapped to prevent clipping edges
+            DOM.cvs.className='w-full h-full flex items-center justify-center overflow-hidden'; DOM.cvs.innerHTML='';
+            const grid = document.createElement('div');
+            grid.className='grid rotate-[-45deg] scale-[1.3] w-[140%] h-[140%]';
+            grid.style.gap='var(--c-gap)';
+            grid.style.gridTemplateColumns='repeat(5, 1fr)'; grid.style.gridTemplateRows='repeat(5, 1fr)';
+            const mask = [0,1,3,4, 5,9, 15,19, 20,21,23,24]; // empty slots to form diamond
+            let imgCursor = 0;
+            for(let i=0; i<25; i++) {
+                if(mask.includes(i)) { const e=document.createElement('div'); grid.appendChild(e); } // empty filler
+                else { cSlot(State.p[imgCursor] || null, '!rounded-none border-4 border-white shadow-lg', false, grid); imgCursor++; }
+            }
+            DOM.cvs.appendChild(grid);
+        }
+
+        // Pro Graphic Design JSON Template Engine (PicsArt/Canva style)
+        function mProTemplate(tmpl) {
+            DOM.cvs.className = 'w-full h-full relative overflow-hidden bg-cover bg-center'; 
+            DOM.cvs.style.background = tmpl.bg || 'transparent';
+            DOM.cvs.style.backgroundColor = tmpl.bgColor || 'transparent';
+            DOM.cvs.innerHTML = ''; 
+
+            if(tmpl.shapes) {
+                tmpl.shapes.forEach(sh => {
+                    const d = document.createElement('div');
+                    d.className = `absolute pointer-events-none ${sh.ext || ''}`;
+                    d.style.width = sh.w; d.style.height = sh.h; 
+                    d.style.top = sh.y; d.style.left = sh.x;
+                    if(sh.bg) d.style.background = sh.bg;
+                    if(sh.clip) d.style.clipPath = sh.clip;
+                    DOM.cvs.appendChild(d);
+                });
+            }
+
+            let limit = Math.max(tmpl.slots.length, State.p.length);
+            for(let i=0; i < Math.min(limit, tmpl.slots.length); i++) {
+                let conf = tmpl.slots[i];
+                let s = cSlot(State.p[i] || null, `absolute collage-slot border-0 shadow-2xl ${conf.ext || ''}`, true);
+                s.style.width = conf.w; s.style.height = conf.h;
+                s.style.top = conf.y; s.style.left = conf.x;
+                if(conf.rot) s.style.transform = `rotate(${conf.rot}deg)`;
+                if(conf.clip) s.style.clipPath = conf.clip;
+                mDragElement(s);
+            }
+
+            if(tmpl.text) {
+                tmpl.text.forEach(tx => {
+                    let t = cTextSlot(tx.html, `absolute !p-2 !bg-transparent text-slot ${tx.ext || ''}`, DOM.cvs);
+                    t.style.width = tx.w; t.style.top = tx.y; t.style.left = tx.x;
+                    t.style.transform = `translate(-50%, -50%) ${tx.rot ? 'rotate('+tx.rot+'deg)' : ''}`;
+                });
+            }
+        }
+
+        // Draggable Resize Engine (Canva-Style)
+        function injectGridResizers(cL, rL) {
+            if(cL > 1) {
+                for(let i=1; i<cL; i++) {
+                    let r = document.createElement('div'); r.className = 'grid-resizer-col';
+                    r.style.left = `calc(${(i/cL)*100}% - ${DOM.cvs.style.gap}/2)`;
+                    mDragResizer(r, 'col', i-1, cL); DOM.cvs.appendChild(r);
+                }
+            }
+            if(rL > 1) {
+                for(let i=1; i<rL; i++) {
+                    let r = document.createElement('div'); r.className = 'grid-resizer-row';
+                    r.style.top = `calc(${(i/rL)*100}% - ${DOM.cvs.style.gap}/2)`;
+                    mDragResizer(r, 'row', i-1, rL); DOM.cvs.appendChild(r);
+                }
+            }
+        }
+
+        function mDragResizer(el, dir, index, total) {
+            el.onpointerdown = e => {
+                document.body.classList.add('resizing');
+                el.setPointerCapture(e.pointerId);
+                const isCol = dir === 'col';
+                const startPos = isCol ? e.clientX : e.clientY;
+                const rect = DOM.cvs.getBoundingClientRect();
+                const totalSize = isCol ? rect.width : rect.height;
+                
+                let curStyle = window.getComputedStyle(DOM.cvs);
+                let curTracks = (isCol ? curStyle.gridTemplateColumns : curStyle.gridTemplateRows).split(' ').map(parseFloat);
+                let sum = curTracks.reduce((a,b)=>a+b,0);
+                let trackFrs = curTracks.map(v => (v/sum) * total); // normalized to total fr
+                
+                el.onpointermove = ev => {
+                    let delta = (isCol ? ev.clientX : ev.clientY) - startPos;
+                    let deltaPerc = delta / totalSize;
+                    
+                    let newTracks = [...trackFrs];
+                    newTracks[index] = Math.max(0.1, trackFrs[index] + deltaPerc * total);
+                    newTracks[index+1] = Math.max(0.1, trackFrs[index+1] - deltaPerc * total);
+                    
+                    if(isCol) DOM.cvs.style.gridTemplateColumns = newTracks.map(f=>f+'fr').join(' ');
+                    else DOM.cvs.style.gridTemplateRows = newTracks.map(f=>f+'fr').join(' ');
+                };
+                el.onpointerup = () => { document.body.classList.remove('resizing'); el.onpointermove=null; };
+            };
+        }
+
+        // Procedural Smart Layout Generator (Infinite BSP Randomness)
+        function generateProceduralLayout(c) {
+            State.l = 'auto_generated';
+            DOM.cvs.className='w-full h-full grid relative';
+            DOM.cvs.style.gap = 'var(--c-gap)';
+            DOM.cvs.style.gridTemplateColumns = 'repeat(12, 1fr)';
+            DOM.cvs.style.gridTemplateRows = 'repeat(12, 1fr)';
+            DOM.cvs.innerHTML = '';
+            
+            let rects = [{x:0, y:0, w:12, h:12}];
+            let targetCount = Math.max(1, Math.min(c || 5, 20));
+            while(rects.length < targetCount) {
+                let splittable = rects.filter(r => r.w >= 4 || r.h >= 4);
+                if(!splittable.length) break;
+                let rToSplit = splittable[Math.floor(Math.random() * splittable.length)];
+                rects.splice(rects.indexOf(rToSplit), 1);
+                
+                let splitDir; // 0=horiz (cut height), 1=vert (cut width)
+                if (rToSplit.w > rToSplit.h * 1.5) splitDir = 1;
+                else if (rToSplit.h > rToSplit.w * 1.5) splitDir = 0;
+                else splitDir = Math.random() > 0.5 ? 1 : 0;
+                
+                if (splitDir === 1 && rToSplit.w >= 4) {
+                    let minCut = 2; let maxCut = rToSplit.w - 2;
+                    let cut = Math.floor(Math.random() * (maxCut - minCut + 1)) + minCut;
+                    rects.push({x: rToSplit.x, y: rToSplit.y, w: cut, h: rToSplit.h});
+                    rects.push({x: rToSplit.x + cut, y: rToSplit.y, w: rToSplit.w - cut, h: rToSplit.h});
+                } else if (rToSplit.h >= 4) {
+                    let minCut = 2; let maxCut = rToSplit.h - 2;
+                    let cut = Math.floor(Math.random() * (maxCut - minCut + 1)) + minCut;
+                    rects.push({x: rToSplit.x, y: rToSplit.y, w: rToSplit.w, h: cut});
+                    rects.push({x: rToSplit.x, y: rToSplit.y + cut, w: rToSplit.w, h: rToSplit.h - cut});
+                } else {
+                    rects.push(rToSplit); break;
+                }
+            }
+            
+            // Build the rect slots
+            rects.forEach((rect, i) => {
+                if(i >= targetCount) return;
+                let slot = cSlot(State.p[i] || null, '');
+                slot.style.gridColumnStart = rect.x + 1;
+                slot.style.gridColumnEnd = rect.x + rect.w + 1;
+                slot.style.gridRowStart = rect.y + 1;
+                slot.style.gridRowEnd = rect.y + rect.h + 1;
+            });
+            // Resizers for AI layout are tricky, using invisible pseudo elements over gaps. We omit for deep random cuts to prevent UI clutter.
+        }
+
+        // 110+ Categorized Massive Layout Map Definition
+        const LMap = [];
+
+        // 1. Grid Based (35 Layouts)
+        const gridCat = { c: 'Grid Based', count: 35, s: [] };
+        gridCat.s.push({ n: 'Auto Magic', i: 'fa-wand-magic-sparkles', k: 'grid-smart', f: c => generateProceduralLayout(c) });
+        // Editorial Text Grids (New additions from requests)
+        gridCat.s.push({ n: 'Text Grid Love', i: 'fa-font', k: 'grid-text-love', f: c=>mEditorialGrid(c, 3, 3, {4: '<h2 style="font-size:3vw;font-weight:900;letter-spacing:4px;">LO<br>VE</h2>'}) });
+        gridCat.s.push({ n: 'Text Grid Couple', i: 'fa-font', k: 'grid-text-name', f: c=>mEditorialGrid(c, 2, 2, {1: '<h2 style="font-size:clamp(10px,2vw,18px);text-transform:uppercase;letter-spacing:1px;">HER NAME</h2>', 2: '<h2 style="font-size:clamp(10px,2vw,18px);text-transform:uppercase;letter-spacing:1px;">HIS NAME</h2>'}) });
+        gridCat.s.push({ n: 'Text Grid Split', i: 'fa-font', k: 'grid-text-split', f: c=>mEditorialGrid(c, 1, 2, {0: '<span style="border-top:1px solid #111;padding-top:10px;font-size:clamp(10px,1.5vw,14px);letter-spacing:2px">DATE & TIME</span><h2 style="font-size:3vw;margin:10px 0;">TITLE HERE</h2>'}) });
+        
+        for(let r=1; r<=6; r++) {
+            for(let col=1; col<=6; col++) {
+                if(r===1 && col===1) continue;
+                gridCat.s.push({ n: `${col}x${r} Grid`, i: 'fa-border-all', k: `grid-${col}x${r}`, f: c=>mGrid(c, col, r) });
+                if(gridCat.s.length >= 35) break;
+            }
+            if(gridCat.s.length >= 35) break;
+        }
+        LMap.push(gridCat);
+
+        // 2. Masonry / Mosaic (25 Layouts)
+        const masonryCat = { c: 'Masonry / Mosaic', count: 25, s: [] };
+        masonryCat.s.push({ n: 'Vector Slant', i: 'fa-draw-polygon', k: 'mosaic-slant', f: c=>mVectorSlant(c) });
+        masonryCat.s.push({ n: 'Diamond Grid', i: 'fa-gem', k: 'mosaic-diamond', f: c=>mDiamondMasonry(c) });
+        
+        const masonrySpanSets = [
+            ['col-span-2 row-span-2', 'col-span-1 row-span-1', 'col-span-1 row-span-1', 'col-span-2 row-span-1'],
+            ['col-span-3 row-span-2', 'col-span-1 row-span-1', 'col-span-1 row-span-1'],
+            ['col-span-1 row-span-3', 'col-span-2 row-span-1', 'col-span-2 row-span-2'],
+            ['col-span-2 row-span-1', 'col-span-1 row-span-2', 'col-span-1 row-span-2', 'col-span-2 row-span-1']
+        ];
+        masonrySpanSets.forEach((set, i) => masonryCat.s.push({ n: `Masonry V${i+1}`, i: 'fa-th-large', k: `masonry-${i}`, f: c=>mBento(c, 3, 3, set) }));
+        for(let i=5;i<=23;i++) masonryCat.s.push({ n: `Dynamic Mosaic ${i}`, i: 'fa-cubes', k: `mosaic-dyn-${i}`, f: c=>generateProceduralLayout(c) });
+        LMap.push(masonryCat);
+
+        // 3. Hero Layouts (10 Layouts)
+        const heroCat = { c: 'Hero Layouts', count: 10, s: [] };
+        const heroSpanSets = [
+            ['col-span-3 row-span-3', 'col-span-1 row-span-1', 'col-span-1 row-span-1', 'col-span-1 row-span-1'],
+            ['col-span-1 row-span-1', 'col-span-3 row-span-3', 'col-span-1 row-span-1', 'col-span-1 row-span-1'],
+            ['col-span-4 row-span-2', 'col-span-2 row-span-1', 'col-span-2 row-span-1'],
+            ['col-span-2 row-span-2', 'col-span-1 row-span-1', 'col-span-1 row-span-1'] // Standard Icon Layout
+        ];
+        heroSpanSets.forEach((set, i) => heroCat.s.push({ n: `Hero Style ${i+1}`, i: 'fa-star', k: `hero-${i}`, f: c=>mBento(c, 4, 3, set) }));
+        for(let i=5;i<=10;i++) heroCat.s.push({ n: `Focus Layout ${i}`, i: 'fa-bullseye', k: `focus-${i}`, f: c=>generateProceduralLayout(c) });
+        LMap.push(heroCat);
+
+        // 4. Strip & Story Layouts (10 Layouts)
+        const stripCat = { c: 'Strip & Story', count: 10, s: [] };
+        for(let i=2;i<=6;i++) stripCat.s.push({ n: `Horizontal ${i}`, i: 'fa-grip-lines-vertical', k: `strip-h-${i}`, f: c=>mGrid(c, i, 1) });
+        for(let i=2;i<=6;i++) stripCat.s.push({ n: `Vertical Flow ${i}`, i: 'fa-grip-lines', k: `strip-v-${i}`, f: c=>mGrid(c, 1, i) });
+        LMap.push(stripCat);
+
+        // 5. Shape-Based Layouts (15 Layouts)
+        const shapeCat = { c: 'Shape-Based', count: 15, s: [] };
+        shapeCat.s.push({ n: 'Circle Cut', i: 'fa-circle', k: 'shape-circle', f: c => mScat(c, '!rounded-full', false, 1) });
+        const clipPaths = ["polygon(50% 0%, 0% 100%, 100% 100%)", "polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)", "polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)", "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)"];
+        clipPaths.forEach((path, i) => shapeCat.s.push({ n: `Polygon Style ${i+1}`, i: 'fa-draw-polygon', k: `shape-poly-${i}`, f: c => {
+            mGrid(c, Math.ceil(Math.sqrt(c)), Math.ceil(Math.sqrt(c))); DOM.cvs.querySelectorAll('.collage-slot').forEach(s => s.style.clipPath = path);
+        }}));
+        for(let i=6;i<=15;i++) shapeCat.s.push({ n: `Custom Bubble ${i}`, i: 'fa-shapes', k: `shape-custom-${i}`, f: c => mScat(c, '!rounded-[max(50px,25%)] border-4 border-brand', true, 1.1) });
+        LMap.push(shapeCat);
+
+        // 7. Pro Graphic Templates (PicsArt/Canva Styles)
+        const proCat = { c: 'Pro Templates ✨', count: 10, s: [] };
+        
+        proCat.s.push({ n: 'Neon Cyber Grid', i: 'fa-bolt', k: 'pro-cyber', f: c => {
+            const tmpl = {
+                bgColor: '#050510',
+                shapes: [
+                    { w:'200%', h:'200%', x:'-50%', y:'-50%', bg:'radial-gradient(circle, rgba(0,255,255,0.15) 0%, transparent 60%)', ext:'z-0' },
+                    { w:'100%', h:'2px', x:'0', y:'50%', bg:'#0ff', ext:'z-0 shadow-[0_0_15px_#0ff] rotate-45' }
+                ],
+                slots: [],
+                text: [{ html: '<h1 style="font-family:sans-serif;font-weight:900;font-size:4vw;color:#fff;text-shadow:0 0 10px #0ff, 0 0 20px #0ff;letter-spacing:10px;">NIGHT CITY</h1>', x:'50%', y:'90%', w:'90%' }]
+            };
+            for(let i=0; i<c; i++) {
+                let w = 40 + Math.random()*20; let h = 40 + Math.random()*20;
+                let x = 5 + Math.random()*50; let y = 5 + Math.random()*60; let rot = (Math.random()-0.5)*20;
+                let colors = ['cyan-400', 'pink-400', 'purple-500'];
+                let rs = ['[0_0_25px_rgba(0,255,255,0.4)]', '[0_0_25px_rgba(255,0,255,0.4)]', '[0_0_35px_rgba(168,85,247,0.6)]'];
+                tmpl.slots.push({ w:w+'%', h:h+'%', x:x+'%', y:y+'%', rot:rot, ext: `!border-2 !border-${colors[i%3]} !shadow-${rs[i%3]} blend-screen` });
+            }
+            mProTemplate(tmpl);
+        }});
+
+        proCat.s.push({ n: 'Spring Watercolor', i: 'fa-leaf', k: 'pro-spring', f: c => {
+            const tmpl = {
+                bg: 'url(https://www.transparenttextures.com/patterns/rice-paper-2.png)', bgColor: '#fecaca',
+                shapes: [{ w:'80%', h:'80%', x:'10%', y:'10%', bg:'#fff', ext:'opacity-50 blur-[50px] mix-blend-overlay' }],
+                slots: [],
+                text: [{ html: '<h1 style="font-family:\'Playfair Display\', serif;font-style:italic;font-size:6vw;color:#9f1239;">Aesthetic Vibes</h1><p style="font-family:sans-serif;font-size:1vw;letter-spacing:4px;color:#be123c;">SPRING COLLECTION</p>', x:'50%', y:'15%', w:'80%' }]
+            };
+            let cx = 10, cy = 30;
+            for(let i=0; i<c; i++) {
+                let isCircle = i%3 === 2;
+                tmpl.slots.push({ w:'35%', h:isCircle?'35%':'50%', x:cx+'%', y:cy+'%', rot: (Math.random()-0.5)*15, ext: isCircle ? '!border-[8px] !border-white !rounded-full opacity-90 delay-100 hover:scale-110' : 'tape-effect !border-[12px] !border-white !rounded-none shadow-xl' });
+                cx += 20; cy += 15; if(cx>50){cx=10; cy-=20;}
+            }
+            mProTemplate(tmpl);
+        }});
+
+        proCat.s.push({ n: 'Torn Scrapbook', i: 'fa-scroll', k: 'pro-torn', f: c => {
+            const tmpl = {
+                bgColor: '#d4d4d8', bg: 'url(https://www.transparenttextures.com/patterns/cream-paper.png)',
+                shapes: [{ w:'40%', h:'100%', x:'0%', y:'0%', bg:'#111', clip:'polygon(0 0, 100% 0, 80% 100%, 0 100%)' }],
+                slots: [],
+                text: [{ html: '<p style="font-family:serif;font-weight:bold;font-size:8vw;color:#fff;mix-blend-mode:difference;margin:0;line-height:0.8;">MEMORIES</p>', x:'50%', y:'50%', w:'90%' }]
+            };
+            for(let i=0; i<c; i++) {
+                let w = 25 + Math.random()*20, h = w * 1.2, x = 10 + Math.random()*60, y = 10 + Math.random()*60;
+                let forms = ['torn-paper !shadow-2xl grayscale', '!border-[15px] !border-white tape-effect', 'polaroid-frame !shadow-xl'];
+                tmpl.slots.push({ w:w+'%', h:h+'%', x:x+'%', y:y+'%', rot: (Math.random()-0.5)*30, ext: forms[i%3] });
+            }
+            mProTemplate(tmpl);
+        }});
+        
+        proCat.s.push({ n: 'Organic Blobs', i: 'fa-cloud', k: 'pro-blobs', f: c => {
+            const tmpl = {
+                bgColor: '#e0f2fe',
+                shapes: [
+                    { w:'150%', h:'150%', x:'-20%', y:'-20%', bg:'#bae6fd', ext:'opacity-60', clip:'polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%)' },
+                    { w:'60%', h:'60%', x:'30%', y:'30%', bg:'#38bdf8', ext:'!rounded-[40%_60%_70%_30%/40%_50%_60%_50%] opacity-80 mix-blend-multiply shadow-2xl skew-y-6 flex items-center justify-center p-10 overflow-hidden' }
+                ],
+                slots: [],
+                text: [{ html: '<h2 style="font-family:sans-serif;font-weight:900;font-size:3vw;color:#1e3a8a;background:white;padding:10px 20px;border-radius:50px;display:inline-block;box-shadow:0 10px 20px rgba(0,0,0,0.1)">LIMITED OFFER</h2>', x:'50%', y:'85%', w:'auto' }]
+            };
+            let sx = 10, sy = 10;
+            for(let i=0; i<c; i++) {
+                let mask = i%2===0 ? '!rounded-t-full !border-8 !border-white shadow-xl hover:-translate-y-2 transition-transform' : '!rounded-full !border-4 !border-white opacity-90';
+                tmpl.slots.push({ w:'30%', h:i%2===0?'50%':'30%', x:sx+'%', y:sy+'%', ext: mask });
+                sx += 35; sy += (i%2===0?10:-10); if(sx>60){sx=5; sy+=40;}
+            }
+            mProTemplate(tmpl);
+        }});
+
+        proCat.s.push({ n: 'Valentine Floral', i: 'fa-heart', k: 'pro-valentine', f: c => {
+            const tmpl = {
+                bgColor: '#fdf2f8', bg: 'url(https://www.transparenttextures.com/patterns/stardust.png)',
+                shapes: [{ w:'90%', h:'90%', x:'5%', y:'5%', bg:'transparent', ext:'!border-4 !border-pink-300 !border-dashed !rounded-3xl pointer-events-none z-0' }],
+                slots: [],
+                text: [{ html: '<h1 style="font-family:\'Playfair Display\', serif;font-size:8vw;color:#be185d;text-shadow: 2px 2px 0px #fff;white-space:nowrap;">I Love You</h1>', x:'50%', y:'85%', w:'auto', rot: -5 }]
+            };
+            for(let i=0; i<c; i++) {
+                let w = 30 + (Math.random()*20); let h = w * 1.2;
+                let ext = i===0 ? '!border-[20px] !border-white !rounded-3xl !shadow-2xl z-10' : '!border-[10px] !border-white !rounded-full !shadow-2xl saturate-[1.2] opacity-90';
+                tmpl.slots.push({ w:w+'%', h:h+'%', x:(10+Math.random()*40)+'%', y:(10+Math.random()*40)+'%', rot: (Math.random()-0.5)*15, ext: ext });
+            }
+            mProTemplate(tmpl);
+        }});
+
+        LMap.push(proCat);
+
+        // 8. Masters of Geometry (The Final 6 Advanced Algorithmic Layouts)
+        const advCat = { c: 'Master Geometry 📐', count: 6, s: [] };
+
+        advCat.s.push({ n: 'Editorial Dashboard', i: 'fa-table-columns', k: 'adv-editorial', f: c => {
+            const tmpl = { bgColor: '#111', slots: [], text: [{ html: '<div style="color:white;text-align:left;padding:2vw"><h4 style="color:#a855f7;font-weight:bold;letter-spacing:2px;font-size:1vw">LOREM IPSUM</h4><h1 style="font-size:3vw;line-height:1;margin:10px 0;">EDITORIAL DASHBOARD</h1><p style="font-size:1vw;color:#aaa;margin-top:20px;max-width:300px;">Sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna...</p></div>', x: '15%', y: '50%', w: '30%' }] };
+            for(let i=0; i<c; i++) {
+                let size = 15 + Math.random()*20;
+                let px = 40 + Math.random()*45; let py = 5 + Math.random()*75;
+                tmpl.slots.push({ w:size+'%', h:size+'%', x:px+'%', y:py+'%', ext: '!border-[8px] !border-gray-300 shadow-[0_10px_40px_rgba(0,0,0,0.8)] grayscale hover:grayscale-0 transition-all' });
+            }
+            mProTemplate(tmpl);
+        }});
+
+        advCat.s.push({ n: 'Chaos Text Wall', i: 'fa-align-center', k: 'adv-chaos-text', f: c => {
+            const tmpl = { bgColor: '#1a1a1a', slots: [], text: [{ html: '<div style="background:#222;border:5px solid #fbbf24;padding:40px;box-shadow:0 20px 50px rgba(0,0,0,0.8);"><h3 style="color:#fbbf24;font-family:sans-serif;font-size:2vw;margin-bottom:10px;text-align:center;">YOUR MESSAGE</h3><p style="color:#aaa;font-size:1vw;text-align:center;">Lorem ipsum dolor sit amet, consectetuer adipiscing elit...</p></div>', x: '50%', y: '50%', w: '40%', ext:'z-50' }] };
+            for(let i=0; i<c; i++) {
+                let size = 15 + Math.random()*15;
+                let isTopBottom = Math.random() > 0.5;
+                let px = isTopBottom ? Math.random()*85 : (Math.random()>0.5 ? Math.random()*15 : 70+Math.random()*15);
+                let py = isTopBottom ? (Math.random()>0.5 ? Math.random()*15 : 70+Math.random()*15) : Math.random()*85;
+                tmpl.slots.push({ w:size+'%', h:size+'%', x:px+'%', y:py+'%', rot:(Math.random()-0.5)*90, ext: '!border-4 !border-white shadow-xl z-10' });
+            }
+            mProTemplate(tmpl);
+        }});
+
+        advCat.s.push({ n: 'Central Hub Grid', i: 'fa-crosshairs', k: 'adv-hub', f: c => {
+            const tmpl = { bgColor: '#334155', slots: [] };
+            tmpl.slots.push({ w:'40%', h:'40%', x:'50%', y:'50%', ext: '!border-[10px] !border-white shadow-2xl z-20 hover:scale-105' });
+            let rad = 35;
+            for(let i=1; i<c; i++) {
+                let ang = (i-1) * (360 / Math.max(1, c-1)) * (Math.PI/180);
+                let px = 50 + rad * Math.cos(ang); let py = 50 + rad * Math.sin(ang);
+                tmpl.slots.push({ w:'20%', h:'20%', x:px+'%', y:py+'%', ext: '!border-4 !border-white shadow-lg z-0 transition-transform hover:scale-110 hover:z-30' });
+            }
+            mProTemplate(tmpl);
+        }});
+
+        advCat.s.push({ n: 'Diagonal Cascade', i: 'fa-stairs', k: 'adv-cascade', f: c => {
+            const tmpl = { bgColor: '#fff', shapes: [{ w:'200%', h:'100%', x:'-50%', y:'0', bg:'#e2e8f0', clip:'polygon(0 0, 100% 0, 0 100%)' }], slots: [], text: [{ html: '<h1 style="font-size:4vw;color:#9f1239;font-family:sans-serif;font-weight:900;">HEADLINE</h1><p style="color:#666;font-size:1.5vw;">your sample text here</p>', x:'75%', y:'15%', w:'auto' }] };
+            let step = 80 / Math.max(2, c);
+            for(let i=0; i<c; i++) {
+                let size = 20 + Math.random()*15;
+                tmpl.slots.push({ w:size+'%', h:size+'%', x:(10 + step*i)+'%', y:(10 + step*i)+'%', ext: '!border-[12px] !border-[#e2e8f0] shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-4 hover:scale-105 transition-all z-10' });
+            }
+            mProTemplate(tmpl);
+        }});
+
+        advCat.s.push({ n: 'Circle Bento Intersect', i: 'fa-vector-square', k: 'adv-bento-circle', f: c => {
+            DOM.cvs.className='w-full h-full flex items-center justify-center relative p-[var(--c-padding)]'; DOM.cvs.style.background = '#e0e7ff'; DOM.cvs.innerHTML='';
+            const grid = document.createElement('div');
+            grid.className='grid w-full h-full transition-all duration-300 relative z-0';
+            grid.style.gap='var(--c-gap)'; grid.style.gridTemplateColumns='repeat(3, 1fr)'; grid.style.gridTemplateRows='repeat(3, 1fr)';
+            const circle = cSlot(State.p[0] || null, '!rounded-full !border-[12px] !border-[#e0e7ff] absolute z-20 shadow-[-10px_10px_30px_rgba(0,0,0,0.1)] transition-transform hover:scale-105', true);
+            circle.style.width = '45%'; circle.style.height = '45%'; circle.style.left = '30%'; circle.style.top = '45%'; circle.style.transform = 'translate(-50%, -50%)'; mDragElement(circle);
+            for(let i=1; i<Math.min(c, 10); i++) {
+                let span = ''; if(i===1) span='col-span-2 row-span-1'; else if(i===3||i===6) span='col-span-1 row-span-2'; else span='col-span-1 row-span-1';
+                cSlot(State.p[i] || null, span + ' border border-indigo-200/50', false, grid);
+            }
+            DOM.cvs.appendChild(grid);
+        }});
+
+        advCat.s.push({ n: 'Color Block Hub', i: 'fa-palette', k: 'adv-color-hub', f: c => {
+            const tmpl = { bg: 'url(https://www.transparenttextures.com/patterns/cubes.png) #e0f2fe', slots: [] };
+            let clrs = ['#3b82f6', '#ef4444', '#22c55e', '#f97316', '#a855f7', '#ec4899', '#14b8a6'];
+            let pxs = [15, 35, 65, 85, 15, 85, 50]; let pys = [15, 15, 15, 15, 85, 85, 85];
+            for(let i=0; i<Math.min(c, 7); i++) {
+                tmpl.slots.push({ w:'22%', h:'28%', x:pxs[i]+'%', y:pys[i]+'%', ext: `!border-[8px] !border-[${clrs[i]}] shadow-lg hover:scale-105 z-0` });
+            }
+            if(c>7) tmpl.slots.push({ w:'35%', h:'35%', x:'50%', y:'50%', ext: '!rounded-full !border-[12px] !border-yellow-400 z-20 shadow-2xl' });
+            mProTemplate(tmpl);
+        }});
+
+        LMap.push(advCat);
+
+        // Slot Creator
+        function cSlot(srcObj, ext='', isAbs=false, pNode=DOM.cvs) {
+            let userShapeInfo = State.pshape || '';
+            let clipCSS = '';
+            if(userShapeInfo.startsWith('clip-')) {
+                if(userShapeInfo === 'clip-hexa') clipCSS = 'clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); border-radius:0 !important;';
+                userShapeInfo = '';
+            }
+
+            const s=document.createElement('div'); 
+            s.className=`collage-slot bg-white/5 relative overflow-hidden flex flex-col justify-center items-center backdrop-blur-md ${ext} ${userShapeInfo}`;
+            if(clipCSS) s.style.cssText += clipCSS;
+            if(isAbs) s.style.position='absolute';
+            
+            if(srcObj) {
+                let srcUrl = typeof srcObj === 'object' ? srcObj.url : srcObj;
+                const i=document.createElement('img'); i.src=srcUrl; i.className='w-full h-full object-cover transition-transform duration-75';
+                const o=document.createElement('div'); o.className='absolute inset-0 cursor-move'; 
+                s.append(i,o);
+                
+                // Advanced Image Panning/Zooming
+                let sc=1, tx=0, ty=0, dg=false, sx, sy;
+                o.onpointerdown=e=>{ dg=true; sx=e.clientX-tx; sy=e.clientY-ty; o.setPointerCapture(e.pointerId); };
+                o.onpointermove=e=>{ if(!dg)return; tx=e.clientX-sx; ty=e.clientY-sy; i.style.transform=`translate(${tx}px,${ty}px) scale(${sc})`; };
+                o.onpointerup=()=>dg=false; 
+                o.onwheel=e=>{ e.preventDefault(); sc=Math.max(0.2, Math.min(10, sc-e.deltaY*0.005)); i.style.transform=`translate(${tx}px,${ty}px) scale(${sc})`; };
+            } else {
+                s.innerHTML=`<div class="flex flex-col items-center opacity-30"><i class="fas fa-image text-4xl mb-2"></i><span class="text-xs font-bold">Empty</span></div>`;
+            }
+            pNode.appendChild(s); return s;
+        }
+
+        // Draggable elements generic logic (used for scat layout and text/stickers)
+        function mDragElement(el) {
+            let ox, oy, dg=false; 
+            el.onpointerdown = e => { 
+                if(e.target.tagName==='IMG' || el.isContentEditable) return; 
+                dg = true;
+                ox = e.clientX - el.getBoundingClientRect().left; 
+                oy = e.clientY - el.getBoundingClientRect().top;
+                
+                // Bring to front logic
+                const allDrags = el.parentElement.querySelectorAll(el.className.split(' ')[0]);
+                let maxZ = 20;
+                allDrags.forEach(d => { if(parseInt(d.style.zIndex)>maxZ) maxZ = parseInt(d.style.zIndex); });
+                el.style.zIndex = maxZ + 1;
+
+                const move = ev => { 
+                    if(!dg) return;
+                    const rect = el.parentElement.getBoundingClientRect();
+                    el.style.left = `${ev.clientX - rect.left - ox}px`; 
+                    el.style.top = `${ev.clientY - rect.top - oy}px`; 
+                };
+                document.addEventListener('pointermove', move); 
+                document.addEventListener('pointerup', () => { dg = false; document.removeEventListener('pointermove', move); }, {once:true}); 
+            };
+        }
+
+        // Filters Engine
+        const applyFX = () => {
+            const b=document.getElementById('fx-bright').value;
+            const c=document.getElementById('fx-cont').value;
+            const s=document.getElementById('fx-sat').value;
+            const h=document.getElementById('fx-hue').value;
+            const x=document.getElementById('fx-blur').value;
+            const filterStr = `brightness(${b}%) contrast(${c}%) saturate(${s}%) hue-rotate(${h}deg) blur(${x}px)`;
+            DOM.cvs.querySelectorAll('img').forEach(i=>i.style.filter = filterStr);
+        };
+
+        // Main Render Engine
+        function render() {
+            document.documentElement.style.setProperty('--c-gap', State.g+'px');
+            document.documentElement.style.setProperty('--c-radius', State.rad+'px');
+            document.documentElement.style.setProperty('--c-padding', State.pad+'px');
+            DOM.ext.style.background = State.bg;
+            DOM.ext.style.boxShadow = `var(--c-shadow), inset 0 0 0 2px ${State.border==='transparent'?'rgba(255,255,255,0.02)':State.border}`;
+            DOM.ext.style.aspectRatio = State.r;
+            
+            let f = null; for(let c of LMap) for(let s of c.s) if(s.k===State.l) f=s.f;
+            if(f) f(Math.max(1, State.p.length));
+            applyFX();
+        }
+
+        // Initial Bindings
+        function bind() {
+            // Populate Layout Sidebar (Accordion Style)
+            const acDiv = document.getElementById('style-accordion-container'); acDiv.innerHTML='';
+            LMap.forEach((cat, index) => {
+                const wrap = document.createElement('div'); wrap.className = 'glass-panel rounded-xl overflow-hidden shadow-md';
+                
+                const hdrBtn = document.createElement('button');
+                hdrBtn.className = 'w-full px-4 py-3 flex justify-between items-center text-left hover:bg-white/5 transition-colors font-bold text-xs text-brand uppercase tracking-widest';
+                hdrBtn.innerHTML = `<span>${cat.c} <span class="bg-brand/20 text-brand px-2 py-0.5 rounded-full ml-2 text-[9px]">${cat.count}</span></span> <i class="fas fa-chevron-down text-gray-400 transition-transform id-chev-${index}"></i>`;
+                
+                const bdy = document.createElement('div');
+                bdy.id = `cat-bdy-${index}`;
+                bdy.className = 'layout-cat-body bg-black/20';
+                if(index === 0) { bdy.classList.add('open'); }
+                else { hdrBtn.querySelector('i').classList.add('-rotate-90'); }
+                
+                const grid = document.createElement('div'); grid.className='grid grid-cols-2 gap-2 p-3';
+                
+                cat.s.forEach(s => {
+                    const c = document.createElement('div'); 
+                    c.className=`flex flex-col items-center justify-center p-3 rounded-xl cursor-pointer glass-button transition-all duration-300 layout-btn-opt ${State.l===s.k?'ring-2 ring-brand bg-brand/20 scale-[1.05]':'hover:bg-white/10'}`;
+                    c.innerHTML=`<div class="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center mb-1"><i class="fas ${s.i} text-white"></i></div><span class="text-[9px] font-bold uppercase text-center">${s.n}</span>`;
+                    c.onclick=()=>{ 
+                        State.l=s.k; 
+                        document.querySelectorAll('.layout-btn-opt').forEach(x=>x.classList.remove('ring-2','ring-brand','bg-brand/20','scale-[1.05]')); 
+                        c.classList.add('ring-2','ring-brand','bg-brand/20','scale-[1.05]'); 
+                        render(); 
+                    };
+                    grid.appendChild(c);
+                });
+                
+                hdrBtn.onclick = () => {
+                    const isOpen = bdy.classList.contains('open');
+                    document.querySelectorAll('.layout-cat-body').forEach(b => b.classList.remove('open'));
+                    document.querySelectorAll('.layout-cat-body + i, .layout-cat-body').forEach(b => { /* reset icons */ });
+                    if(!isOpen) { bdy.classList.add('open'); hdrBtn.querySelector('i').classList.remove('-rotate-90'); }
+                    else { hdrBtn.querySelector('i').classList.add('-rotate-90'); }
+                };
+                
+                bdy.appendChild(grid);
+                wrap.appendChild(hdrBtn); wrap.appendChild(bdy);
+                acDiv.appendChild(wrap);
+            });
+
+            // Ratio Buttons
+            document.querySelectorAll('.ratio-btn').forEach(b => b.onclick=()=> { 
+                document.querySelectorAll('.ratio-btn').forEach(x=>x.classList.remove('active','text-white','bg-white/10')); 
+                b.classList.add('active','text-white','bg-white/10'); 
+                State.r=b.dataset.ratio; 
+                document.documentElement.style.setProperty('--canvas-ratio',State.r); 
+                render(); 
+            });
+            
+            // Auto Generate Layout
+            document.getElementById('btn-auto-layout').onclick = () => {
+                document.querySelectorAll('.layout-btn-opt').forEach(x=>x.classList.remove('ring-2','ring-brand','bg-brand/20','scale-[1.05]'));
+                generateProceduralLayout(State.p.length || 5);
+                applyFX();
+            };
+
+            // Drag and Drop Uploads logic
+            const tabMedia = document.getElementById('tab-media');
+            const uploadLabel = tabMedia.querySelector('.border-dashed');
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadLabel.addEventListener(eventName, prf, false);
+            });
+            function prf(e) { e.preventDefault(); e.stopPropagation(); }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadLabel.addEventListener(eventName, () => uploadLabel.classList.add('bg-brand/30', 'border-brand', 'scale-[1.02]'), false)
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadLabel.addEventListener(eventName, () => uploadLabel.classList.remove('bg-brand/30', 'border-brand', 'scale-[1.02]'), false)
+            });
+            
+            uploadLabel.addEventListener('drop', e => {
+                let dt = e.dataTransfer; let files = dt.files;
+                handleUploadFiles(Array.from(files));
+            });
+
+            document.getElementById('file-upload').onchange = e => handleUploadFiles(Array.from(e.target.files));
+            
+            async function handleUploadFiles(files) {
+                const aiToggle = document.getElementById('ai-smart-toggle').checked;
+                for(let f of files) {
+                    if(!f.type.startsWith('image/')) continue; 
+                    const dataUrl = await new Promise(resolve => {
+                        const r=new FileReader(); r.onload=ev=>resolve(ev.target.result); r.readAsDataURL(f);
+                    });
+                    
+                    const img = new Image(); img.src = dataUrl;
+                    await new Promise(resolve => img.onload = resolve);
+                    
+                    const ratio = img.naturalWidth / img.naturalHeight;
+                    // Sort type map: 1 for landscape, 2 for portrait, 3 for square. Mixed layout priority.
+                    const typeWeight = ratio > 1.2 ? 1 : (ratio < 0.8 ? 2 : 3);
+                    
+                    State.p.push({ url: dataUrl, w: img.naturalWidth, h: img.naturalHeight, weight: typeWeight });
+                }
+                
+                if(aiToggle) {
+                    // Smart Sort: Alternate landscape/portrait for better dynamic grid placements
+                    State.p.sort((a,b) => a.weight - b.weight); 
+                }
+                
+                _ug(); render();
+            }
+
+            document.getElementById('clear-gallery').onclick=()=>{State.p=[]; _ug(); render();};
+
+            // Lightbox functionality
+            const lightbox = document.getElementById('lightbox-modal');
+            const lightboxImg = document.getElementById('lightbox-img');
+            const lightboxContent = document.getElementById('lightbox-content');
+            
+            document.getElementById('close-lightbox').onclick = closeLightbox;
+            lightbox.onclick = (e) => { if(e.target === lightbox) closeLightbox(); };
+            
+            function closeLightbox() {
+                lightbox.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    lightboxContent.classList.add('scale-95');
+                    lightboxContent.classList.remove('scale-100');
+                }, 50);
+            }
+            window.openLightbox = (src) => {
+                lightboxImg.src = src;
+                lightbox.classList.remove('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    lightboxContent.classList.remove('scale-95');
+                    lightboxContent.classList.add('scale-100');
+                }, 50);
+            };
+
+            // Sliders
+            ['gap','rad','pad'].forEach(k=>document.getElementById('slider-'+k).oninput=e=>{ State[k]=parseInt(e.target.value); document.getElementById('val-'+k).innerText=e.target.value+'px'; render(); });
+            
+            // Borders & BG
+            document.getElementById('custom-border-color').oninput=e=>{State.border=e.target.value; render();};
+            document.querySelectorAll('.border-btn').forEach(b=>b.onclick=()=>{State.border=b.dataset.border; render();});
+            
+            document.getElementById('bg-upload').onchange=e=>{ 
+                const f=e.target.files[0]; if(f){ const r=new FileReader(); r.onload=ev=>{State.bg=`url('${ev.target.result}') center/cover no-repeat`; render();}; r.readAsDataURL(f); } 
+            };
+            document.querySelectorAll('.bg-btn').forEach(b=>b.onclick=()=>{State.bg=b.dataset.bg; render();});
+
+            // Effects
+            ['bright','cont','sat','hue','blur'].forEach(k=>document.getElementById('fx-'+k).oninput=applyFX);
+            document.querySelectorAll('.preset-btn').forEach(b=>b.onclick=()=>{
+                const vals = b.dataset.f.split(',');
+                document.getElementById('fx-bright').value = vals[0];
+                document.getElementById('fx-cont').value = vals[1];
+                document.getElementById('fx-sat').value = vals[2];
+                document.getElementById('fx-hue').value = vals[3];
+                document.getElementById('fx-blur').value = vals[4];
+                applyFX();
+            });
+            document.querySelectorAll('.shape-btn').forEach(b=>b.onclick=()=>{
+                State.pshape = b.dataset.s;
+                render();
+            });
+
+            // Advanced Typography Engine
+            let aT=null;
+            document.getElementById('add-text-btn').onclick=()=>{
+                const t=document.createElement('div'); 
+                t.className='draggable-item absolute font-display font-black p-4 text-[48px] pointer-events-auto z-40'; 
+                t.innerText='SUPERSTAR'; 
+                t.style.left='30%'; t.style.top='30%'; t.style.color='#ffffff'; t.style.textShadow='0 10px 30px rgba(0,0,0,0.5)';
+                
+                const selectText = () => {
+                    if(aT) aT.classList.remove('editing', 'ring-2', 'ring-brand'); 
+                    aT=t; 
+                    t.classList.add('ring-2', 'ring-brand'); 
+                    document.getElementById('text-controls').classList.remove('opacity-50','pointer-events-none');
+                    // update controls to match text
+                    document.getElementById('text-size').value = parseInt(window.getComputedStyle(t).fontSize);
+                };
+
+                mDragElement(t);
+                
+                t.addEventListener('pointerdown', (e) => {
+                    if(e.detail === 2) { 
+                        t.contentEditable="true"; t.classList.add('editing'); t.focus(); 
+                        // move cursor to end
+                        const sel = window.getSelection(); const range = document.createRange(); range.selectNodeContents(t); range.collapse(false); sel.removeAllRanges(); sel.addRange(range);
+                        return; 
+                    }
+                    selectText();
+                });
+                
+                t.onblur=()=> { t.contentEditable="false"; t.classList.remove('editing'); };
+                DOM.ovr.appendChild(t); selectText();
+            };
+
+            // Text Formatting Bindings
+            document.getElementById('text-color').oninput=e=>{if(aT)aT.style.color=e.target.value;};
+            document.getElementById('text-bg-color').oninput=e=>{if(aT){aT.style.backgroundColor=e.target.value; aT.style.borderRadius='12px';}};
+            document.getElementById('text-font').onchange=e=>{if(aT)aT.style.fontFamily=e.target.value;};
+            document.getElementById('text-size').oninput=e=>{if(aT)aT.style.fontSize=e.target.value+'px';};
+            document.getElementById('text-spacing').oninput=e=>{if(aT)aT.style.letterSpacing=e.target.value+'px';};
+            document.getElementById('text-shadow').oninput=e=>{if(aT)aT.style.textShadow=`0 10px ${e.target.value}px rgba(0,0,0,0.8)`;};
+            document.getElementById('delete-text-btn').onclick=()=>{if(aT){aT.remove();aT=null;document.getElementById('text-controls').classList.add('opacity-50','pointer-events-none');}};
+
+            // Stickers
+            document.querySelectorAll('.add-sticker-btn').forEach(b => b.onclick=()=>{
+                const s = document.createElement('div');
+                s.className = 'draggable-item absolute z-40 pointer-events-auto';
+                s.style.left = '40%'; s.style.top = '40%';
+                
+                if(b.dataset.type === 'text') {
+                    s.innerText = b.dataset.val;
+                    s.style.fontSize = '60px';
+                } else if(b.dataset.type === 'tape') {
+                    s.className += ' w-24 h-6 bg-white/50 backdrop-blur-sm shadow-sm rotate-[-5deg]';
+                }
+                
+                mDragElement(s);
+                s.ondblclick = () => s.remove(); // double click to delete sticker
+                DOM.ovr.appendChild(s);
+            });
+
+            // Mobile Nav Logic
+            document.querySelectorAll('.nav-tab').forEach(t=>t.onclick=()=>{ 
+                document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active')); 
+                document.querySelectorAll(`.nav-tab[data-target="${t.dataset.target}"]`).forEach(x=>x.classList.add('active')); 
+                document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); 
+                document.getElementById(t.dataset.target).classList.add('active'); 
+                if(innerWidth<768) DOM.sbar.classList.add('open'); 
+            });
+
+            const cBtn=document.getElementById('close-drawer'); if(cBtn) cBtn.onclick=()=>DOM.sbar.classList.remove('open');
+            
+            // Full Export Logic with formats
+            const exportOptionsBtn = document.getElementById('export-options-btn');
+            const exportDropdown = document.getElementById('export-dropdown');
+            
+            // Toggle dropdown
+            exportOptionsBtn.onclick = (e) => {
+                e.stopPropagation();
+                const isOpen = !exportDropdown.classList.contains('opacity-0');
+                if (isOpen) {
+                    exportDropdown.classList.add('opacity-0', 'pointer-events-none', 'translate-y-2');
+                    exportDropdown.classList.remove('translate-y-0');
+                } else {
+                    exportDropdown.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-2');
+                    exportDropdown.classList.add('translate-y-0');
+                }
+            };
+            
+            // Close dropdown if clicked outside
+            document.addEventListener('click', () => {
+                exportDropdown.classList.add('opacity-0', 'pointer-events-none', 'translate-y-2');
+                exportDropdown.classList.remove('translate-y-0');
+            });
+
+            document.querySelectorAll('.export-btn-format').forEach(btn => {
+                btn.onclick = async (e) => {
+                    e.stopPropagation();
+                    exportDropdown.classList.add('opacity-0', 'pointer-events-none');
+                    
+                    const format = btn.dataset.format;
+                    if(aT) { aT.classList.remove('editing', 'ring-2', 'ring-brand'); aT.contentEditable="false"; }
+                    
+                    const b = document.getElementById('export-options-btn'); 
+                    const o = b.innerHTML; 
+                    b.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Rendering ${format.toUpperCase()}...`; 
+                    b.classList.add('pointer-events-none');
+                    
+                    setTimeout(async () => {
+                        try{ 
+                            const options = {pixelRatio: 3, style: { transform: 'scale(1)', transformOrigin: 'top left' }};
+                            let dataUrl;
+                            if (format === 'png') dataUrl = await htmlToImage.toPng(DOM.ext, options);
+                            else if (format === 'jpeg') dataUrl = await htmlToImage.toJpeg(DOM.ext, { ...options, quality: 0.95 });
+                            else if (format === 'webp') {
+                                const canvas = await htmlToImage.toCanvas(DOM.ext, options);
+                                dataUrl = canvas.toDataURL('image/webp', 0.95);
+                            }
+                            
+                            const l = document.createElement('a'); 
+                            l.download = `Collagify-Ultimate-${Date.now()}.${format === 'jpeg' ? 'jpg' : format}`; 
+                            l.href = dataUrl; 
+                            l.click(); 
+                        }catch(err){alert('Error generating HD export. Ensure images are not blocked by CORS.'); console.error(err)}
+                        b.innerHTML = o; 
+                        b.classList.remove('pointer-events-none');
+                    }, 100);
+                };
+            });
+        }
+
+        // Update Gallery View
+        function _ug() { 
+            DOM.gal.innerHTML=''; 
+            State.p.forEach((sObj,i)=>{ 
+                let s = typeof sObj === 'object' ? sObj.url : sObj;
+                const d=document.createElement('div'); 
+                d.className='aspect-square rounded-xl overflow-hidden relative group shadow-lg border border-white/10 cursor-pointer'; 
+                d.onclick = () => openLightbox(s); // Watch image binding
+                d.innerHTML=`<img src="${s}" class="w-full h-full object-cover transition-transform group-hover:scale-110">
+                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                <i class="fas fa-search-plus text-white text-xl drop-shadow-[0_0_10px_rgba(0,0,0,0.8)]"></i>
+                             </div>
+                             <button onclick="event.stopPropagation(); State.p.splice(${i},1);_ug();render()" class="absolute top-2 right-2 bg-red-500/80 backdrop-blur-md text-white w-6 h-6 rounded-full text-[10px] opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 hover:scale-110 flex items-center justify-center z-10"><i class="fas fa-times"></i></button>`; 
+                DOM.gal.appendChild(d); 
+            }); 
+        }
+
+        // Init
+        window.onload=()=>{ bind(); render(); };
+    </script>
+    
+    <!-- Lightbox Modal -->
+    <div id="lightbox-modal" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-4">
+        <button id="close-lightbox" class="absolute top-6 right-6 w-12 h-12 glass-panel rounded-full flex items-center justify-center text-white hover:bg-red-500/20 hover:text-red-400 transition-colors z-10"><i class="fas fa-times text-xl"></i></button>
+        <div class="relative max-w-5xl max-h-[90vh] w-full h-full flex flex-col items-center justify-center gap-4 transform scale-95 transition-transform duration-300" id="lightbox-content">
+            <img id="lightbox-img" src="" class="max-w-full max-h-[80vh] object-contain rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] border border-white/10">
+            <div class="glass-panel px-6 py-3 rounded-full flex gap-4 text-sm font-bold items-center border border-white/20">
+                <span class="text-gray-400">Viewing Source Image:</span>
+                <span id="lightbox-info" class="text-brand">Original Upload</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
